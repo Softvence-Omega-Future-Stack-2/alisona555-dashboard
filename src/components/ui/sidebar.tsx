@@ -273,7 +273,7 @@ function SidebarTrigger({
       }}
       {...props}
     >
-      <Menu className="size-6" />
+      <Menu className="size-7" />
       <span className="sr-only">Toggle Sidebar</span>
     </Button>
   )

@@ -39,7 +39,7 @@ export default function BookingsPage() {
     return (
         <div>
             <div className="bg-white p-6 md:p-8 flex gap-4">
-                <SidebarTrigger className="w-12 h-12 md:hidden    cursor-pointer ml-1 rounded-lg hover:bg-gray-100 text-gray-700" />
+                  <SidebarTrigger className="w-10 h-10 md:hidden bg-gray-50 border ml-1 border-gray-200 rounded-lg hover:bg-gray-100 text-gray-700" />
                 <div>
                     <h1 className="text-2xl font-bold text-gray-900 tracking-tight">Bookings</h1>
                     <p className="text-gray-500 text-sm mt-1">Manage your platform efficiently</p>
