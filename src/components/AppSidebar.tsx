@@ -6,7 +6,7 @@ import {
   Users,
   Ticket,
   Settings,
-  LogOut, 
+  LogOut,
   UserRoundCheck
 } from "lucide-react";
 import {
@@ -19,7 +19,7 @@ import {
   SidebarMenu,
   SidebarMenuButton,
   SidebarMenuItem,
-  useSidebar, 
+  useSidebar,
 } from "./ui/sidebar";
 import Link from "next/link";
 import Image from "next/image";
@@ -77,8 +77,8 @@ const AppSidebar = () => {
                 <span className="text-[10px] text-[#5CE1E6]">Admin@gmail.com</span>
               </div>
             </div>
-             
-            <UserRoundCheck size={16} className="text-white "/>
+
+            <UserRoundCheck size={16} className="text-white " />
           </div>
         </div>
       </SidebarHeader>

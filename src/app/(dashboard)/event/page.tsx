@@ -65,12 +65,12 @@ export default function EventManagementPage() {
                             Create Event
                         </Button>
                     </DialogTrigger>
-                    <DialogContent className="sm:max-w-175 p-0 overflow-hidden border-none rounded-2xl bg-white focus:outline-none focus-visible:ring-0">
+                    <DialogContent className="sm:max-w-[700px] w-[95vw] max-h-[92vh] overflow-y-auto p-0 border-none rounded-2xl bg-white focus:outline-none focus-visible:ring-0">
                         <DialogHeader className="px-6  pt-6 border-b border-gray-100 pr-12 mb-0">
                             <DialogTitle className="text-[22px] font-bold text-[#1F2937]">Create New Event</DialogTitle>
                         </DialogHeader>
 
-                        <div className="p-6">
+                        <div className="p-4 sm:p-6">
                             <form className="space-y-3">
                                 {/* Event Title */}
                                 <div className="space-y-1.5">
@@ -165,13 +165,13 @@ export default function EventManagementPage() {
                                 </div>
 
                                 {/* Buttons Layer */}
-                                <div className="flex gap-4 pt-2">
+                                <div className="flex flex-col sm:flex-row gap-3 sm:gap-4 pt-2">
                                     <DialogClose asChild>
-                                        <Button type="button" variant="outline" className="flex-1 h-12 rounded-xl border-gray-200 text-black cursor-pointer font-semibold hover:bg-gray-50 text-[15px]">
+                                        <Button type="button" variant="outline" className="flex-1 order-2 md:order-1 h-12 rounded-xl border-gray-200 text-black cursor-pointer font-semibold hover:bg-gray-50 text-[15px]">
                                             Cancel
                                         </Button>
                                     </DialogClose>
-                                    <Button type="button" className="flex-1 h-12 rounded-xl bg-brand-gold hover:bg-brand-gold-hover text-white font-bold text-[15px] cursor-pointer">
+                                    <Button type="button" className="flex-1 order-1 md:order-2 h-12 rounded-xl bg-brand-gold hover:bg-brand-gold-hover text-white font-bold text-[15px] cursor-pointer">
                                         Create Event
                                     </Button>
                                 </div>
