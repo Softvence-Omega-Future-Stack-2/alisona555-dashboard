@@ -31,30 +31,32 @@ export default function LoginPage() {
 
                 {/* Login Form Box */}
                 <div className="bg-brand-navy-light w-full rounded-2xl p-6 md:p-8 shadow-2xl border border-gray-800/50">
-                    <form className="space-y-5">
+                    <form className="space-y-5" autoComplete="off">
 
-                        <div className="space-y-2">
-                            <label className="text-gray-300 text-xs font-semibold ml-1">Admin Email</label>
-                            <div className="relative">
+                        <div className="space-y-4">
+                            <label className="text-gray-300 text-sm font-inter font-semibold ml-1">Admin Email</label>
+                            <div className="relative mt-4">
                                 {/* <Mail className="absolute left-3.5 top-1/2 -translate-y-1/2 text-gray-400 h-5 w-5" /> */}
 
                                  <CircleUserRound className="absolute left-3.5 top-1/2 -translate-y-1/2 text-white/80 h-5 w-5" />
                                 <Input
                                     type="email"
+                                    autoComplete="off"
                                     placeholder="admin@example.com"
-                                    className="pl-11 h-12 bg-[#252D42] border-transparent focus-visible:ring-1   text-gray-200 placeholder:text-gray-500 rounded-xl"
+                                    className="pl-11 h-12 bg-white/10  border border-white/20    text-gray-200 placeholder:text-gray-500 rounded-xl"
                                 />
                             </div>
                         </div>
 
                         <div className="space-y-2">
-                            <label className="text-gray-300 text-xs font-semibold ml-1">Password</label>
-                            <div className="relative">
+                            <label className="text-gray-300 text-sm! font-inter font-semibold ml-1 mb-4!">Password</label>
+                            <div className="relative mt-4">
                                 <LockKeyholeOpen className="absolute left-3.5 top-1/2 -translate-y-1/2 text-gray-400 h-5 w-5" />
                                 <Input
                                     type="password"
+                                    autoComplete="off"
                                     placeholder="password"
-                                    className="pl-11 h-12 bg-[#252D42] border-transparent focus-visible:ring-1   text-gray-200 placeholder:text-gray-500 rounded-xl"
+                                    className="pl-11 h-12 bg-white/10  border border-white/20   text-gray-200 placeholder:text-gray-500 rounded-xl"
                                 />
                             </div>
                             <div className="flex justify-end pt-1">

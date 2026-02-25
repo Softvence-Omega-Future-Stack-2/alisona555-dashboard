@@ -33,8 +33,8 @@ export default function BookingsPage() {
                     {/* Card 1 */}
                     <div className="bg-white rounded-2xl p-6 shadow-sm border border-gray-100 flex flex-col justify-between h-41.25 w-full max-w-sm">
                         <div className="flex justify-between items-start">
-                            <div className="w-12 h-12 rounded-xl bg-[#FFF2E5] flex items-center justify-center">
-                                <Ticket className="text-[#FF6B00] w-6 h-6" />
+                            <div className="w-12 h-12 rounded-xl bg-linear-to-r from-[#FF6900] to-[#FB2C36] flex items-center justify-center">
+                                <Ticket className="text-white w-6 h-6" />
                             </div>
                             <div className="text-emerald-500 text-sm font-medium flex items-center">
                                 <span className="text-lg mr-1">↑</span> +12.5%
@@ -49,8 +49,8 @@ export default function BookingsPage() {
                     {/* Card 2 */}
                     <div className="bg-white rounded-2xl p-6 shadow-sm border border-gray-100 flex flex-col justify-between h-41.25 w-full max-w-sm">
                         <div className="flex justify-between items-start">
-                            <div className="w-12 h-12 rounded-xl bg-emerald-100 flex items-center justify-center">
-                                <DollarSign className="text-emerald-500 w-6 h-6" />
+                            <div className="w-12 h-12 rounded-xl bg-linear-to-r from-[#00C950] to-[#00BC7D] flex items-center justify-center">
+                                <DollarSign className="text-white w-6 h-6" />
                             </div>
                             {/* No indicator on revenue in design but let's add placeholder or leave empty. Image doesn't clearly show +12.5% on revenue but looks like it might not have it. Let's omit just in case. */}
                         </div>

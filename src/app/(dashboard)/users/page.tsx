@@ -35,8 +35,8 @@ export default function UserManagementPage() {
                 {/* Card 1 */}
                 <div className="bg-white rounded-2xl p-6 shadow-sm border border-gray-100 flex flex-col justify-between h-41.25">
                     <div className="flex justify-between items-start">
-                        <div className="w-12 h-12 rounded-xl bg-[#FFF2E5] flex items-center justify-center">
-                            <Ticket className="text-[#FF6B00] w-6 h-6" />
+                        <div className="w-12 h-12 rounded-xl bg-linear-to-r from-[#FF6900] to-[#FB2C36] flex items-center justify-center">
+                            <Ticket className="text-white w-6 h-6" />
                         </div>
                         {/* No percentage on this first one in design? Wait, design has +12.5% on others, but none on first? Actually, let's omit it if not there, or add a placeholder */}
                     </div>
@@ -49,8 +49,8 @@ export default function UserManagementPage() {
                 {/* Card 2 */}
                 <div className="bg-white rounded-2xl p-6 shadow-sm border border-gray-100 flex flex-col justify-between h-41.25">
                     <div className="flex justify-between items-start">
-                        <div className="w-12 h-12 rounded-xl bg-[#F4E8FF] flex items-center justify-center">
-                            <Users className="text-brand-purple w-6 h-6" />
+                        <div className="w-12 h-12 rounded-xl bg-linear-to-r from-[#AD46FF] to-[#F6339A]  flex items-center justify-center">
+                            <Users className="text-white w-6 h-6" />
                         </div>
                         <div className="text-emerald-500 text-sm font-medium flex items-center">
                             <span className="text-lg mr-1">↑</span> +12.5%
@@ -65,8 +65,8 @@ export default function UserManagementPage() {
                 {/* Card 3 */}
                 <div className="bg-white rounded-2xl p-6 shadow-sm border border-gray-100 flex flex-col justify-between h-41.25">
                     <div className="flex justify-between items-start">
-                        <div className="w-12 h-12 rounded-xl bg-emerald-100 flex items-center justify-center">
-                            <DollarSign className="text-emerald-500 w-6 h-6" />
+                        <div className="w-12 h-12 rounded-xl bg-linear-to-r from-[#00C950] to-[#00BC7D] flex items-center justify-center">
+                            <DollarSign className="text-white w-6 h-6" />
                         </div>
                         <div className="text-emerald-500 text-sm font-medium flex items-center">
                             <span className="text-lg mr-1">↑</span> +12.5%
@@ -80,8 +80,8 @@ export default function UserManagementPage() {
             </div>
 
             {/* Filter / Search Bar */}
-            <div className="bg-white rounded-2xl p-2 shadow-sm border border-gray-100 flex items-center w-full">
-                <div className="flex-1 flex items-center px-4">
+            <div className="bg-white rounded-2xl p-2 shadow-sm border border-gray-100 flex items-center w-full gap-4">
+                <div className="flex-1 flex items-center px-4 bg-[#EEF2FF] rounded-xl">
                     <Search className="text-gray-400 w-5 h-5 mr-3" />
                     <Input
                         type="text"
