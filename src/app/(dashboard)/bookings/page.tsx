@@ -94,18 +94,37 @@ export default function BookingsPage() {
                             className="border-none shadow-none focus-visible:ring-0 text-[15px] h-12 px-0 text-gray-600 bg-transparent placeholder:text-gray-400"
                         />
                     </div>
-                    <NativeSelect
-                        value={dateFilter}
-                        onChange={(e) => setDateFilter(e.target.value)}
-                        className="bg-brand-purple hover:bg-brand-purple/90 text-white rounded-xl h-11 px-5 font-medium flex items-center gap-2 flex-1 sm:flex-initial shadow-none border-none focus:ring-0"
-                    >
-                        <NativeSelectOption value="">Date</NativeSelectOption>
-                        <NativeSelectOption value="Jan 15, 2025">Jan 15, 2025</NativeSelectOption>
-                        <NativeSelectOption value="Feb 20, 2025">Feb 20, 2025</NativeSelectOption>
-                        <NativeSelectOption value="Mar 05, 2025">Mar 05, 2025</NativeSelectOption>
-                        <NativeSelectOption value="Apr 12, 2025">Apr 12, 2025</NativeSelectOption>
-                        <NativeSelectOption value="May 15, 2025">May 15, 2025</NativeSelectOption>
-                    </NativeSelect>
+
+                    <div className="relative flex-1 sm:flex-initial min-w-40">
+                        <CalendarIcon
+                            className="absolute left-3 top-1/2 -translate-y-1/2 text-white/80 w-4 h-4 pointer-events-none z-10"
+                        />
+                        <NativeSelect
+                            value={dateFilter}
+                            onChange={(e) => setDateFilter(e.target.value)}
+                            className={`
+      bg-brand-purple hover:bg-brand-purple/90 
+      text-white rounded-xl h-11 
+      pl-10 pr-8              
+      font-medium shadow-none border-none focus:ring-0
+      appearance-none          
+    `}
+                        >
+                            <NativeSelectOption value="">Date</NativeSelectOption>
+                            <NativeSelectOption value="Jan 15, 2025">Jan 15, 2025</NativeSelectOption>
+                            <NativeSelectOption value="Feb 20, 2025">Feb 20, 2025</NativeSelectOption>
+                            <NativeSelectOption value="Mar 05, 2025">Mar 05, 2025</NativeSelectOption>
+                            <NativeSelectOption value="Apr 12, 2025">Apr 12, 2025</NativeSelectOption>
+                            <NativeSelectOption value="May 15, 2025">May 15, 2025</NativeSelectOption>
+                            {/* ... বাকি অপশন */}
+                        </NativeSelect>
+
+                        {/* ঐচ্ছিক: custom dropdown arrow রাখতে চাইলে */}
+                        <ChevronDown
+                            className="absolute right-3 top-1/2 -translate-y-1/2 text-white/80 w-4 h-4 pointer-events-none"
+                        />
+                    </div>
+
                 </div>
 
                 {/* Data Table */}
@@ -114,7 +133,7 @@ export default function BookingsPage() {
                         <Table className="w-full">
                             <TableHeader className="bg-[#EEF2F6]">
                                 <TableRow className="border-none hover:bg-[#EEF2F6]">
-                                    <TableHead className="py-4 font-semibold text-gray-700 h-auto">Booking Ref</TableHead>
+                                    <TableHead className="py-4 font-semibold text-gray-700 h-auto pl-4">Booking Ref</TableHead>
                                     <TableHead className="py-4 font-semibold text-gray-700 h-auto">Customer</TableHead>
                                     <TableHead className="py-4 font-semibold text-gray-700 h-auto hidden md:table-cell">Event</TableHead>
                                     <TableHead className="py-4 font-semibold text-gray-700 h-auto hidden sm:table-cell">Location</TableHead>
@@ -128,7 +147,7 @@ export default function BookingsPage() {
                             <TableBody className="bg-white">
                                 {filteredBookings.map((booking, idx) => (
                                     <TableRow key={idx} className="border-b border-gray-50 hover:bg-gray-50/50 transition-colors">
-                                        <TableCell className="py-4 text-gray-900 font-medium text-[14px]">
+                                        <TableCell className="py-4 text-gray-900 font-medium text-[14px] pl-4">
                                             {booking.id}
                                         </TableCell>
                                         <TableCell className="py-4">
@@ -142,10 +161,10 @@ export default function BookingsPage() {
                                         <TableCell className="py-4 font-semibold text-gray-900 text-[14px]">{booking.amount}</TableCell>
                                         <TableCell className="py-4">
                                             <span className={`inline-flex items-center px-3 py-1 rounded-full text-xs font-medium border ${booking.status === 'confirmed'
-                                                    ? 'bg-blue-50 text-blue-600 border-blue-100/50'
-                                                    : booking.status === 'pending'
-                                                        ? 'bg-amber-50 text-amber-600 border-amber-100/50'
-                                                        : 'bg-red-50 text-red-600 border-red-100/50'
+                                                ? 'bg-blue-50 text-blue-600 border-blue-100/50'
+                                                : booking.status === 'pending'
+                                                    ? 'bg-amber-50 text-amber-600 border-amber-100/50'
+                                                    : 'bg-red-50 text-red-600 border-red-100/50'
                                                 }`}>
                                                 {booking.status}
                                             </span>

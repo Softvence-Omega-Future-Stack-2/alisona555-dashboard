@@ -182,10 +182,8 @@ export default function EventManagementPage() {
                 </Dialog>
             </div>
             <div className="flex flex-col gap-6 w-full  mx-auto">
-
-
                 {/* Stats Cards */}
-                <div className="grid grid-cols-1 md:grid-cols-4 gap-6 p-6 md:p-8">
+                <div className="grid grid-cols-1 md:grid-cols-4 gap-6 p-6 md:px-8">
                     {/* Card 1 */}
                     <div className="bg-white rounded-2xl p-6 shadow-sm border border-gray-100 flex flex-col justify-between h-41.25">
                         <div className="flex justify-between items-start">
