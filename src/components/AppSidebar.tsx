@@ -6,8 +6,7 @@ import {
   Users,
   Ticket,
   Settings,
-  LogOut,
-  UserCircle2,
+  LogOut, 
   UserRoundCheck
 } from "lucide-react";
 import {
@@ -19,7 +18,8 @@ import {
   SidebarHeader,
   SidebarMenu,
   SidebarMenuButton,
-  SidebarMenuItem, 
+  SidebarMenuItem,
+  useSidebar, 
 } from "./ui/sidebar";
 import Link from "next/link";
 import Image from "next/image";
@@ -56,6 +56,7 @@ const items = [
 
 const AppSidebar = () => {
   const pathname = usePathname();
+  const { setOpenMobile } = useSidebar();
 
   return (
     <Sidebar className="bg-[#101828] border-r-0 text-white w-64">
@@ -97,7 +98,7 @@ const AppSidebar = () => {
                         : "text-gray-300 hover:bg-white/10 hover:text-white"
                         }`}
                     >
-                      <Link href={item.url} className="flex items-center gap-3">
+                      <Link href={item.url} className="flex items-center gap-3" onClick={() => setOpenMobile(false)}>
                         <item.icon className="w-5 h-5" />
                         <span className="font-medium font-inter text-[15px]">{item.title}</span>
                       </Link>

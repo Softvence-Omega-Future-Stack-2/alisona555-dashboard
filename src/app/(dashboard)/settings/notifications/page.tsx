@@ -8,7 +8,7 @@ export default function NotificationSettingsPage() {
         <div className="animate-in fade-in duration-300">
             <h2 className="text-xl font-bold text-gray-900 mb-6">Change Password</h2>
 
-            <div className="max-w-[1000px] flex flex-col gap-6">
+            <div className="max-w-250 flex flex-col gap-6">
 
                 {/* Toggle 1: New Bookings */}
                 <div className="flex items-center justify-between py-4 border-b border-gray-100">

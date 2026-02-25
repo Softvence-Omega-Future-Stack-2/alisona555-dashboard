@@ -6,7 +6,7 @@ export default function ProfileSettingsPage() {
         <div className="animate-in fade-in duration-300">
             <h2 className="text-xl font-bold text-gray-900 mb-6">Personal Information</h2>
 
-            <form className="max-w-[900px]">
+            <form className="max-w-225">
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-x-8 gap-y-6">
                     {/* Full Name */}
                     <div className="space-y-2">

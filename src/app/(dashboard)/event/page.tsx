@@ -27,6 +27,8 @@ import {
     DialogTrigger,
     DialogClose,
 } from "@/components/ui/dialog";
+import { SidebarTrigger } from "@/components/ui/sidebar";
+import { NativeSelect, NativeSelectOption } from "@/components/ui/native-select";
 
 // ... [existing dummy data above]
 
@@ -34,10 +36,14 @@ export default function EventManagementPage() {
     return (
         <div>
             {/* Header */}
-            <div className="bg-white py-4 md:p-8 flex flex-col sm:flex-row sm:items-center justify-between gap-4">
-                <div>
-                    <h1 className="text-2xl font-bold text-gray-900 tracking-tight">Event Management</h1>
-                    <p className="text-gray-500 text-sm mt-1">Manage your platform efficiently</p>
+            <div className="bg-white py-4 p-6 md:p-8 flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+
+                <div className="flex gap-4">
+                    <SidebarTrigger className="w-10 h-10 md:hidden bg-gray-50 border ml-1 border-gray-200 rounded-lg hover:bg-gray-100 text-gray-700" />
+                    <div>
+                        <h1 className="text-2xl font-bold text-gray-900 tracking-tight">Event Management</h1>
+                        <p className="text-gray-500 text-sm mt-1">Manage your platform efficiently</p>
+                    </div>
                 </div>
 
                 {/* Create Event Modal */}
@@ -227,12 +233,25 @@ export default function EventManagementPage() {
                             />
                         </div>
                         <div className="flex gap-3 px-2 w-full sm:w-auto">
-                            <Button className="bg-brand-purple hover:bg-brand-purple/90 text-white rounded-xl h-11 px-5 font-medium flex items-center gap-2 flex-1 sm:flex-initial">
+                            {/* <Button className="bg-brand-purple hover:bg-brand-purple/90 text-white rounded-xl h-11 px-5 font-medium flex items-center gap-2 flex-1 sm:flex-initial">
                                 Category <ChevronDown className="w-4 h-4 ml-1 opacity-80" />
-                            </Button>
-                            <Button variant="outline" className="bg-gray-100 hover:bg-gray-200 text-gray-700 border-none rounded-xl h-11 px-5 font-medium flex items-center gap-2 flex-1 sm:flex-initial shadow-none">
+                            </Button> */}
+                            <NativeSelect  className="bg-brand-purple hover:bg-brand-purple/90 text-white rounded-xl h-11 px-5 font-medium flex items-center gap-2 flex-1 sm:flex-initial">
+                                <NativeSelectOption value="">Category</NativeSelectOption>
+                                <NativeSelectOption value="Astronomy">Astronomy</NativeSelectOption>
+                                <NativeSelectOption value="Astronomy">Astronomy</NativeSelectOption>
+                                <NativeSelectOption value="Astronomy">Astronomy</NativeSelectOption>
+                                <NativeSelectOption value="Astronomy">Astronomy</NativeSelectOption>
+                            </NativeSelect> 
+                            {/* <Button variant="outline" className="bg-gray-100 hover:bg-gray-200 text-gray-700 border-none rounded-xl h-11 px-5 font-medium flex items-center gap-2 flex-1 sm:flex-initial shadow-none">
                                 Status <ChevronDown className="w-4 h-4 ml-1 opacity-80" />
-                            </Button>
+                            </Button> */}
+                             <NativeSelect  className="bg-gray-100 hover:bg-gray-200 text-gray-700 border-none rounded-xl h-11 px-5 font-medium flex items-center gap-2 flex-1 sm:flex-initial shadow-none focus:shadow-none focus:border-0">
+                                <NativeSelectOption value="" defaultChecked>  Status </NativeSelectOption>
+                                <NativeSelectOption value="apple">Active</NativeSelectOption>
+                                <NativeSelectOption value="blueberry">Pending</NativeSelectOption>
+                                <NativeSelectOption value="banana">Completed</NativeSelectOption> 
+                            </NativeSelect>
                         </div>
                     </div>
                 </div>
@@ -243,7 +262,7 @@ export default function EventManagementPage() {
                         <Table className="w-full">
                             <TableHeader className="bg-[#EEF2F6]">
                                 <TableRow className="border-none hover:bg-[#EEF2F6]">
-                                    <TableHead className="py-4 font-semibold text-gray-700 h-auto w-[30%]">Events</TableHead>
+                                    <TableHead className="py-4 font-semibold text-gray-700 h-auto w-[30%] pl-6">Events</TableHead>
                                     <TableHead className="py-4 font-semibold text-gray-700 h-auto">Category</TableHead>
                                     <TableHead className="py-4 font-semibold text-gray-700 h-auto hidden md:table-cell">Date</TableHead>
                                     <TableHead className="py-4 font-semibold text-gray-700 h-auto">Capacity</TableHead>
@@ -257,7 +276,7 @@ export default function EventManagementPage() {
                                     const percentage = (event.booked / event.capacity) * 100;
                                     return (
                                         <TableRow key={idx} className="border-b border-gray-50 hover:bg-gray-50/50 transition-colors">
-                                            <TableCell className="py-4">
+                                            <TableCell className="py-4 pl-6">
                                                 <div className="font-semibold text-gray-900 text-[15px]">{event.eventName}</div>
                                                 <div className="text-gray-500 text-[13px]">{event.location}</div>
                                             </TableCell>
@@ -268,7 +287,7 @@ export default function EventManagementPage() {
                                             </TableCell>
                                             <TableCell className="py-4 text-gray-600 text-[14px] hidden md:table-cell">{event.date}</TableCell>
                                             <TableCell className="py-4">
-                                                <div className="flex flex-col gap-1.5 w-full max-w-[120px]">
+                                                <div className="flex flex-col gap-1.5 w-full max-w-30">
                                                     <span className="text-gray-900 font-semibold text-[14px]">{event.booked} <span className="text-gray-400 font-normal">/ {event.capacity}</span></span>
                                                     <div className="h-1.5 w-full bg-gray-100 rounded-full overflow-hidden">
                                                         <div className="h-full bg-brand-purple rounded-full" style={{ width: `${percentage}%` }}></div>

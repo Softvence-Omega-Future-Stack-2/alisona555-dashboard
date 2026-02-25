@@ -1,5 +1,5 @@
 import { SidebarProvider } from "@/components/ui/sidebar";
-import AppSidebar from "@/components/AppSidebar"; 
+import AppSidebar from "@/components/AppSidebar";  
 
 export default function DashboardLayout({
     children,
@@ -9,9 +9,11 @@ export default function DashboardLayout({
     return (
         <SidebarProvider>
             <AppSidebar />
-            <main className="flex-1 w-full min-h-screen overflow-x-hidden  bg-brand-gray">
-                {/* We can include Navbar here if needed, or just let pages define their headers */}
-                {children}
+            <main className="flex-1 w-full min-h-screen overflow-x-hidden bg-brand-gray flex flex-col">
+              
+                <div className="flex-1">
+                    {children}
+                </div>
             </main>
         </SidebarProvider>
     );

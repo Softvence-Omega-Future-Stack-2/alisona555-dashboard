@@ -9,7 +9,7 @@ export default function SecuritySettingsPage() {
         <div className="animate-in fade-in duration-300">
             <h2 className="text-xl font-bold text-gray-900 mb-6">Change Password</h2>
 
-            <form className="max-w-[1000px] space-y-6">
+            <form className="max-w-250 space-y-6">
 
                 {/* Current Password */}
                 <div className="space-y-2">

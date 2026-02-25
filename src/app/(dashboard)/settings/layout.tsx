@@ -1,5 +1,6 @@
 "use client";
 
+import { SidebarTrigger } from "@/components/ui/sidebar";
 import { UserCircle, Shield, Bell } from "lucide-react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
@@ -19,9 +20,12 @@ export default function SettingsLayout({
     return (
         <div>
             {/* Header */}
-            <div className="bg-white p-6 md:p-8">
-                <h1 className="text-2xl font-bold text-gray-900 tracking-tight">Settings</h1>
+            <div className="bg-white p-6 md:p-8 flex gap-4">
+                <SidebarTrigger className="w-10 h-10 md:hidden bg-gray-50 border ml-1 border-gray-200 rounded-lg hover:bg-gray-100 text-gray-700" />
+              <div>
+                  <h1 className="text-2xl font-bold text-gray-900 tracking-tight">Settings</h1>
                 <p className="text-gray-500 text-sm mt-1">Manage your platform efficiently</p>
+              </div>
             </div>
             <div className="flex flex-col gap-6 w-full   mx-auto p-6 md:p-8">
 

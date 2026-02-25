@@ -1,3 +1,4 @@
+import { SidebarTrigger } from "@/components/ui/sidebar";
 import { DollarSign, CalendarDays, Users, Ticket,   UserPlus, CalendarPlus } from "lucide-react";
 import Link from "next/link";
 
@@ -5,9 +6,12 @@ export default function DashboardPage() {
   return (
     <div>
         {/* Header */}
-      <div className="bg-white  mb-4 py-5 md:p-8">
-        <h1 className="text-2xl font-bold text-gray-900 tracking-tight">Dashboard</h1>
+      <div className="bg-white  mb-4 py-5 px-4 md:p-8 flex gap-4">
+        <SidebarTrigger className="w-10 h-10 md:hidden bg-gray-50 border ml-1 border-gray-200 rounded-lg hover:bg-gray-100 text-gray-700" />
+        <div>
+          <h1 className="text-2xl font-bold text-gray-900 tracking-tight">Dashboard</h1>
         <p className="text-[#6A7282] text-sm mt-1">Manage your platform efficiently</p>
+        </div>
       </div>
       <div className="flex flex-col gap-6 w-full  mx-auto p-6 md:p-8">
 
