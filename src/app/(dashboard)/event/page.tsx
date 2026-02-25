@@ -1,23 +1,23 @@
+"use client";
+
+import { useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
-import { Search, ChevronDown, MoreVertical, Ticket, Users, DollarSign, Plus } from "lucide-react";
+import { Search, ChevronDown, MoreVertical, Ticket, Users, DollarSign, Plus, Eye, Edit, Trash2 } from "lucide-react";
+import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from "@/components/ui/dropdown-menu";
 
 // Dummy Data
-const events = Array(7).fill({
-    id: "E-001",
-    eventName: "Stargazing at Jebel Jais",
-    location: "Ras Al Khaimah",
-    category: "Astronomy",
-    date: "Mar 15, 2026",
-    booked: 45,
-    capacity: 50,
-    revenue: "AED 13,500",
-    status: "Active",
-});
-
-// Modifying the last one to be Completed for visual variance
-events[6] = { ...events[6], status: "Completed" };
+// Dummy Data
+const initialEvents = [
+    { id: "E-001", eventName: "Stargazing at Jebel Jais", location: "Ras Al Khaimah", category: "Astronomy", date: "Mar 15, 2026", booked: 45, capacity: 50, revenue: "AED 13,500", status: "Active" },
+    { id: "E-002", eventName: "Dubai Opera Night", location: "Dubai", category: "Culture", date: "Apr 10, 2026", booked: 120, capacity: 150, revenue: "AED 36,000", status: "Active" },
+    { id: "E-003", eventName: "Desert Safari Adventure", location: "Dubai", category: "Adventure", date: "May 05, 2026", booked: 32, capacity: 40, revenue: "AED 8,960", status: "Pending" },
+    { id: "E-004", eventName: "Beach Volleyball Tournament", location: "Dubai", category: "Sports", date: "Jun 12, 2026", booked: 28, capacity: 30, revenue: "AED 4,200", status: "Active" },
+    { id: "E-005", eventName: "Abu Dhabi Art Fair", location: "Abu Dhabi", category: "Art", date: "Jul 20, 2026", booked: 85, capacity: 100, revenue: "AED 17,000", status: "Completed" },
+    { id: "E-006", eventName: "Skydiving over Palm Jumeirah", location: "Dubai", category: "Adventure", date: "Aug 15, 2026", booked: 12, capacity: 15, revenue: "AED 24,000", status: "Active" },
+    { id: "E-007", eventName: "Hot Air Balloon Ride", location: "Dubai", category: "Adventure", date: "Sep 10, 2026", booked: 18, capacity: 20, revenue: "AED 10,800", status: "Pending" },
+];
 
 import {
     Dialog,
@@ -33,6 +33,17 @@ import { NativeSelect, NativeSelectOption } from "@/components/ui/native-select"
 // ... [existing dummy data above]
 
 export default function EventManagementPage() {
+    const [searchQuery, setSearchQuery] = useState("");
+    const [categoryFilter, setCategoryFilter] = useState("");
+    const [statusFilter, setStatusFilter] = useState("");
+
+    const filteredEvents = initialEvents.filter((event) => {
+        const matchesSearch = event.eventName.toLowerCase().includes(searchQuery.toLowerCase()) || event.location.toLowerCase().includes(searchQuery.toLowerCase());
+        const matchesCategory = categoryFilter ? event.category === categoryFilter : true;
+        const matchesStatus = statusFilter ? event.status === statusFilter : true;
+        return matchesSearch && matchesCategory && matchesStatus;
+    });
+
     return (
         <div>
             {/* Header */}
@@ -229,28 +240,33 @@ export default function EventManagementPage() {
                             <Input
                                 type="text"
                                 placeholder="search Event"
+                                value={searchQuery}
+                                onChange={(e) => setSearchQuery(e.target.value)}
                                 className="border-none shadow-none focus-visible:ring-0 text-[15px] h-12 px-0 text-gray-600 bg-transparent placeholder:text-gray-400"
                             />
                         </div>
                         <div className="flex gap-3 px-2 w-full sm:w-auto">
-                            {/* <Button className="bg-brand-purple hover:bg-brand-purple/90 text-white rounded-xl h-11 px-5 font-medium flex items-center gap-2 flex-1 sm:flex-initial">
-                                Category <ChevronDown className="w-4 h-4 ml-1 opacity-80" />
-                            </Button> */}
-                            <NativeSelect  className="bg-brand-purple hover:bg-brand-purple/90 text-white rounded-xl h-11 px-5 font-medium flex items-center gap-2 flex-1 sm:flex-initial">
+                            <NativeSelect
+                                value={categoryFilter}
+                                onChange={(e) => setCategoryFilter(e.target.value)}
+                                className="bg-brand-purple hover:bg-brand-purple/90 text-white rounded-xl h-11 px-5 font-medium flex items-center gap-2 flex-1 sm:flex-initial"
+                            >
                                 <NativeSelectOption value="">Category</NativeSelectOption>
                                 <NativeSelectOption value="Astronomy">Astronomy</NativeSelectOption>
-                                <NativeSelectOption value="Astronomy">Astronomy</NativeSelectOption>
-                                <NativeSelectOption value="Astronomy">Astronomy</NativeSelectOption>
-                                <NativeSelectOption value="Astronomy">Astronomy</NativeSelectOption>
-                            </NativeSelect> 
-                            {/* <Button variant="outline" className="bg-gray-100 hover:bg-gray-200 text-gray-700 border-none rounded-xl h-11 px-5 font-medium flex items-center gap-2 flex-1 sm:flex-initial shadow-none">
-                                Status <ChevronDown className="w-4 h-4 ml-1 opacity-80" />
-                            </Button> */}
-                             <NativeSelect  className="bg-gray-100 hover:bg-gray-200 text-gray-700 border-none rounded-xl h-11 px-5 font-medium flex items-center gap-2 flex-1 sm:flex-initial shadow-none focus:shadow-none focus:border-0">
-                                <NativeSelectOption value="" defaultChecked>  Status </NativeSelectOption>
-                                <NativeSelectOption value="apple">Active</NativeSelectOption>
-                                <NativeSelectOption value="blueberry">Pending</NativeSelectOption>
-                                <NativeSelectOption value="banana">Completed</NativeSelectOption> 
+                                <NativeSelectOption value="Culture">Culture</NativeSelectOption>
+                                <NativeSelectOption value="Adventure">Adventure</NativeSelectOption>
+                                <NativeSelectOption value="Sports">Sports</NativeSelectOption>
+                                <NativeSelectOption value="Art">Art</NativeSelectOption>
+                            </NativeSelect>
+                            <NativeSelect
+                                value={statusFilter}
+                                onChange={(e) => setStatusFilter(e.target.value)}
+                                className="bg-gray-100 hover:bg-gray-200 text-gray-700 border-none rounded-xl h-11 px-5 font-medium flex items-center gap-2 flex-1 sm:flex-initial shadow-none focus:shadow-none focus:border-0"
+                            >
+                                <NativeSelectOption value="">Status</NativeSelectOption>
+                                <NativeSelectOption value="Active">Active</NativeSelectOption>
+                                <NativeSelectOption value="Pending">Pending</NativeSelectOption>
+                                <NativeSelectOption value="Completed">Completed</NativeSelectOption>
                             </NativeSelect>
                         </div>
                     </div>
@@ -272,7 +288,7 @@ export default function EventManagementPage() {
                                 </TableRow>
                             </TableHeader>
                             <TableBody className="bg-white">
-                                {events.map((event, idx) => {
+                                {filteredEvents.map((event, idx) => {
                                     const percentage = (event.booked / event.capacity) * 100;
                                     return (
                                         <TableRow key={idx} className="border-b border-gray-50 hover:bg-gray-50/50 transition-colors">
@@ -298,15 +314,30 @@ export default function EventManagementPage() {
                                             <TableCell className="py-4">
                                                 <span className={`inline-flex items-center px-3 py-1 rounded-full text-xs font-medium ${event.status === 'Active'
                                                     ? 'bg-brand-success text-brand-success-text'
-                                                    : 'bg-fuchsia-100 text-fuchsia-600'
+                                                    : event.status === 'Completed' ? 'bg-fuchsia-100 text-fuchsia-600' : 'bg-amber-100 text-amber-700'
                                                     }`}>
                                                     {event.status}
                                                 </span>
                                             </TableCell>
                                             <TableCell className="py-4 text-right pr-6">
-                                                <button className="text-gray-400 hover:text-gray-600 transition-colors cursor-pointer w-8 h-8 rounded-full flex items-center justify-center hover:bg-gray-100 ml-auto">
-                                                    <MoreVertical size={18} />
-                                                </button>
+                                                <DropdownMenu>
+                                                    <DropdownMenuTrigger asChild>
+                                                        <button className="text-gray-400 hover:text-gray-600 transition-colors cursor-pointer w-8 h-8 rounded-full flex items-center justify-center hover:bg-gray-100 ml-auto">
+                                                            <MoreVertical size={18} />
+                                                        </button>
+                                                    </DropdownMenuTrigger>
+                                                    <DropdownMenuContent align="end" className="w-36">
+                                                        <DropdownMenuItem className="cursor-pointer">
+                                                            <Eye className="w-4 h-4 mr-2" /> View
+                                                        </DropdownMenuItem>
+                                                        <DropdownMenuItem className="cursor-pointer">
+                                                            <Edit className="w-4 h-4 mr-2" /> Edit
+                                                        </DropdownMenuItem>
+                                                        <DropdownMenuItem className="cursor-pointer text-red-600 focus:text-red-600">
+                                                            <Trash2 className="w-4 h-4 mr-2" /> Delete
+                                                        </DropdownMenuItem>
+                                                    </DropdownMenuContent>
+                                                </DropdownMenu>
                                             </TableCell>
                                         </TableRow>
                                     );

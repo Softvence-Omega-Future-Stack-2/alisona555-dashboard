@@ -1,26 +1,37 @@
+"use client";
+
+import { useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { NativeSelect, NativeSelectOption } from "@/components/ui/native-select";
 import { SidebarTrigger } from "@/components/ui/sidebar";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
-import { Search, ChevronDown, MoreVertical, Ticket, Users, DollarSign } from "lucide-react";
+import { Search, ChevronDown, MoreVertical, Ticket, Users, DollarSign, Eye, Edit, Trash2 } from "lucide-react";
+import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from "@/components/ui/dropdown-menu";
 import Image from "next/image";
 
 // Dummy Data
-const users = Array(8).fill({
-    id: "1",
-    name: "Ahmed Al-Mansoori",
-    email: "ahmed.mansoori@email.com",
-    contact: "+971 50 123 4567",
-    location: "Dubai",
-    activity: "12 bookings",
-    joined: "Jan 15, 2025",
-    status: "Active",
-});
-
-users[7] = { ...users[7], status: "Inactive" };
+const initialUsers = [
+    { id: "1", name: "Ahmed Al-Mansoori", email: "ahmed.mansoori@email.com", contact: "+971 50 123 4567", location: "Dubai", activity: "12 bookings", joined: "Jan 15, 2025", status: "Active" },
+    { id: "2", name: "Sarah Johnson", email: "sarah.j@email.com", contact: "+1 202 555 0123", location: "USA", activity: "5 bookings", joined: "Feb 20, 2025", status: "Active" },
+    { id: "3", name: "Mohammed Ali", email: "m.ali@email.com", contact: "+971 50 987 6543", location: "Abu Dhabi", activity: "8 bookings", joined: "Mar 05, 2025", status: "Inactive" },
+    { id: "4", name: "Emily Chen", email: "emily.c@email.com", contact: "+44 7700 900077", location: "England", activity: "2 bookings", joined: "Mar 12, 2025", status: "Active" },
+    { id: "5", name: "Michael Smith", email: "m.smith@email.com", contact: "+1 312 555 0199", location: "USA", activity: "15 bookings", joined: "Apr 01, 2025", status: "Active" },
+    { id: "6", name: "David Williams", email: "d.will@email.com", contact: "+66 81 234 5678", location: "Thailand", activity: "4 bookings", joined: "May 15, 2025", status: "Active" },
+    { id: "7", name: "Sven Olsen", email: "sven.o@email.com", contact: "+45 20 12 34 56", location: "Denmark", activity: "9 bookings", joined: "Jun 20, 2025", status: "Active" },
+    { id: "8", name: "Fatima Hassan", email: "f.hassan@email.com", contact: "+971 50 111 2222", location: "Sharjah", activity: "1 bookings", joined: "Jul 10, 2025", status: "Inactive" },
+];
 
 export default function UserManagementPage() {
+    const [searchQuery, setSearchQuery] = useState("");
+    const [locationFilter, setLocationFilter] = useState("");
+
+    const filteredUsers = initialUsers.filter((user) => {
+        const matchesSearch = user.name.toLowerCase().includes(searchQuery.toLowerCase()) || user.email.toLowerCase().includes(searchQuery.toLowerCase());
+        const matchesLocation = locationFilter ? user.location === locationFilter : true;
+        return matchesSearch && matchesLocation;
+    });
+
     return (
         <div>
             <div className="bg-white p-6 md:p-8 flex gap-4">
@@ -40,7 +51,7 @@ export default function UserManagementPage() {
                             <div className="w-12 h-12 rounded-xl bg-linear-to-r from-[#FF6900] to-[#FB2C36] flex items-center justify-center">
                                 <Ticket className="text-white w-6 h-6" />
                             </div>
-                            {/* No percentage on this first one in design? Wait, design has +12.5% on others, but none on first? Actually, let's omit it if not there, or add a placeholder */}
+                        
                         </div>
                         <div className="mt-auto">
                             <h2 className="text-2xl font-bold text-gray-900">30</h2>
@@ -88,19 +99,25 @@ export default function UserManagementPage() {
                         <Input
                             type="text"
                             placeholder="search User"
+                            value={searchQuery}
+                            onChange={(e) => setSearchQuery(e.target.value)}
                             className="border-none shadow-none focus-visible:ring-0 text-[15px] h-12 px-0 text-gray-600 bg-transparent placeholder:text-gray-400"
                         />
                     </div>
-                    {/* <Button className="bg-brand-purple hover:bg-brand-purple/90 text-white rounded-xl h-12 px-6 font-medium flex items-center gap-2">
-                        Location <ChevronDown className="w-4 h-4 ml-1 opacity-80" />
-                    </Button> */}
-                    <NativeSelect  className="bg-brand-purple hover:bg-brand-purple/90 text-white rounded-xl h-11 px-5 font-medium flex items-center gap-2 flex-1 sm:flex-initial">
-                                <NativeSelectOption value="">Location</NativeSelectOption>
-                                <NativeSelectOption value="Astronomy">USA</NativeSelectOption>
-                                <NativeSelectOption value="Astronomy">England</NativeSelectOption>
-                                <NativeSelectOption value="Astronomy">Thailand</NativeSelectOption>
-                                <NativeSelectOption value="Astronomy">Denmark</NativeSelectOption>
-                            </NativeSelect> 
+                    <NativeSelect
+                        value={locationFilter}
+                        onChange={(e) => setLocationFilter(e.target.value)}
+                        className="bg-brand-purple hover:bg-brand-purple/90 text-white rounded-xl h-11 px-5 font-medium flex items-center gap-2 flex-1 sm:flex-initial"
+                    >
+                        <NativeSelectOption value="">Location</NativeSelectOption>
+                        <NativeSelectOption value="USA">USA</NativeSelectOption>
+                        <NativeSelectOption value="England">England</NativeSelectOption>
+                        <NativeSelectOption value="Thailand">Thailand</NativeSelectOption>
+                        <NativeSelectOption value="Denmark">Denmark</NativeSelectOption>
+                        <NativeSelectOption value="Dubai">Dubai</NativeSelectOption>
+                        <NativeSelectOption value="Abu Dhabi">Abu Dhabi</NativeSelectOption>
+                        <NativeSelectOption value="Sharjah">Sharjah</NativeSelectOption>
+                    </NativeSelect>
                 </div>
 
                 {/* Data Table */}
@@ -120,7 +137,7 @@ export default function UserManagementPage() {
                                 </TableRow>
                             </TableHeader>
                             <TableBody className="bg-white">
-                                {users.map((user, idx) => (
+                                {filteredUsers.map((user, idx) => (
                                     <TableRow key={idx} className="border-b border-gray-50 hover:bg-gray-50/50 transition-colors">
                                         <TableCell className="py-4 pl-5">
                                             <Image
@@ -147,9 +164,24 @@ export default function UserManagementPage() {
                                             </span>
                                         </TableCell>
                                         <TableCell className="py-4 text-right pr-6">
-                                            <button className="text-gray-400 hover:text-gray-600 transition-colors cursor-pointer w-8 h-8 rounded-full flex items-center justify-center hover:bg-gray-100 ml-auto">
-                                                <MoreVertical size={18} />
-                                            </button>
+                                            <DropdownMenu>
+                                                <DropdownMenuTrigger asChild>
+                                                    <button className="text-gray-400 hover:text-gray-600 transition-colors cursor-pointer w-8 h-8 rounded-full flex items-center justify-center hover:bg-gray-100 ml-auto">
+                                                        <MoreVertical size={18} />
+                                                    </button>
+                                                </DropdownMenuTrigger>
+                                                <DropdownMenuContent align="end" className="w-36">
+                                                    <DropdownMenuItem className="cursor-pointer">
+                                                        <Eye className="w-4 h-4 mr-2" /> View
+                                                    </DropdownMenuItem>
+                                                    <DropdownMenuItem className="cursor-pointer">
+                                                        <Edit className="w-4 h-4 mr-2" /> Edit
+                                                    </DropdownMenuItem>
+                                                    <DropdownMenuItem className="cursor-pointer text-red-600 focus:text-red-600">
+                                                        <Trash2 className="w-4 h-4 mr-2" /> Delete
+                                                    </DropdownMenuItem>
+                                                </DropdownMenuContent>
+                                            </DropdownMenu>
                                         </TableCell>
                                     </TableRow>
                                 ))}

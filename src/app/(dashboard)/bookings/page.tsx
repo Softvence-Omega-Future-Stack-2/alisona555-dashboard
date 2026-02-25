@@ -1,24 +1,41 @@
+"use client";
+
+import { useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { SidebarTrigger } from "@/components/ui/sidebar";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
-import { Search, ChevronDown, MoreVertical, Ticket, Calendar as CalendarIcon, DollarSign } from "lucide-react";
+import { Search, ChevronDown, MoreVertical, Ticket, Calendar as CalendarIcon, DollarSign, Eye, FileText, RefreshCcw } from "lucide-react";
+import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from "@/components/ui/dropdown-menu";
+import { NativeSelect, NativeSelectOption } from "@/components/ui/native-select";
 import Image from "next/image";
 
 // Dummy Data
-const bookings = Array(8).fill({
-    id: "NS-2026-001",
-    customerName: "Ahmed Al-Mansoori",
-    customerEmail: "ahmed.mansoori@email.com",
-    event: "Stargazing at Jebel Jais",
-    location: "Dubai",
-    date: "Jan 15, 2025",
-    quantity: "2 tickets",
-    amount: "AED 600",
-    status: "confirmed",
-});
+const initialBookings = [
+    { id: "NS-2026-001", customerName: "Ahmed Al-Mansoori", customerEmail: "ahmed.mansoori@email.com", event: "Stargazing at Jebel Jais", location: "Dubai", date: "Jan 15, 2025", quantity: "2 tickets", amount: "AED 600", status: "confirmed" },
+    { id: "NS-2026-002", customerName: "Sarah Johnson", customerEmail: "sarah.j@email.com", event: "Dubai Opera Night", location: "Dubai", date: "Feb 20, 2025", quantity: "4 tickets", amount: "AED 1,200", status: "confirmed" },
+    { id: "NS-2026-003", customerName: "Mohammed Ali", customerEmail: "m.ali@email.com", event: "Desert Safari Adventure", location: "Abu Dhabi", date: "Mar 05, 2025", quantity: "1 tickets", amount: "AED 280", status: "pending" },
+    { id: "NS-2026-004", customerName: "Emily Chen", customerEmail: "emily.c@email.com", event: "Beach Volleyball Tournament", location: "Dubai", date: "Apr 12, 2025", quantity: "3 tickets", amount: "AED 450", status: "cancelled" },
+    { id: "NS-2026-005", customerName: "Michael Smith", customerEmail: "m.smith@email.com", event: "Stargazing at Jebel Jais", location: "Dubai", date: "Jan 15, 2025", quantity: "2 tickets", amount: "AED 600", status: "confirmed" },
+    { id: "NS-2026-006", customerName: "David Williams", customerEmail: "d.will@email.com", event: "Hot Air Balloon Ride", location: "Dubai", date: "May 15, 2025", quantity: "2 tickets", amount: "AED 1,200", status: "confirmed" },
+    { id: "NS-2026-007", customerName: "Sven Olsen", customerEmail: "sven.o@email.com", event: "Skydiving over Palm Jumeirah", location: "Dubai", date: "Jun 20, 2025", quantity: "1 tickets", amount: "AED 2,000", status: "pending" },
+    { id: "NS-2026-008", customerName: "Fatima Hassan", customerEmail: "f.hassan@email.com", event: "Dubai Opera Night", location: "Dubai", date: "Feb 20, 2025", quantity: "3 tickets", amount: "AED 900", status: "confirmed" },
+];
 
 export default function BookingsPage() {
+    const [searchQuery, setSearchQuery] = useState("");
+    const [dateFilter, setDateFilter] = useState("");
+
+    const filteredBookings = initialBookings.filter((booking) => {
+        const matchesSearch =
+            booking.customerName.toLowerCase().includes(searchQuery.toLowerCase()) ||
+            booking.customerEmail.toLowerCase().includes(searchQuery.toLowerCase()) ||
+            booking.id.toLowerCase().includes(searchQuery.toLowerCase()) ||
+            booking.event.toLowerCase().includes(searchQuery.toLowerCase());
+        const matchesDate = dateFilter ? booking.date === dateFilter : true;
+        return matchesSearch && matchesDate;
+    });
+
     return (
         <div>
             <div className="bg-white p-6 md:p-8 flex gap-4">
@@ -66,18 +83,29 @@ export default function BookingsPage() {
                 </div>
 
                 {/* Filter / Search Bar */}
-                <div className="bg-white rounded-2xl p-2 shadow-sm border border-gray-100 flex items-center w-full">
+                <div className="bg-white rounded-2xl p-2 shadow-sm border border-gray-100 flex items-center w-full gap-2">
                     <div className="flex-1 flex items-center px-4">
                         <Search className="text-gray-400 w-5 h-5 mr-3" />
                         <Input
                             type="text"
                             placeholder="search Bookings"
+                            value={searchQuery}
+                            onChange={(e) => setSearchQuery(e.target.value)}
                             className="border-none shadow-none focus-visible:ring-0 text-[15px] h-12 px-0 text-gray-600 bg-transparent placeholder:text-gray-400"
                         />
                     </div>
-                    <Button className="bg-brand-purple hover:bg-brand-purple/90 text-white rounded-xl h-12 px-6 font-medium flex items-center gap-2">
-                        Date <CalendarIcon className="w-4 h-4 ml-1 opacity-80" />
-                    </Button>
+                    <NativeSelect
+                        value={dateFilter}
+                        onChange={(e) => setDateFilter(e.target.value)}
+                        className="bg-brand-purple hover:bg-brand-purple/90 text-white rounded-xl h-11 px-5 font-medium flex items-center gap-2 flex-1 sm:flex-initial shadow-none border-none focus:ring-0"
+                    >
+                        <NativeSelectOption value="">Date</NativeSelectOption>
+                        <NativeSelectOption value="Jan 15, 2025">Jan 15, 2025</NativeSelectOption>
+                        <NativeSelectOption value="Feb 20, 2025">Feb 20, 2025</NativeSelectOption>
+                        <NativeSelectOption value="Mar 05, 2025">Mar 05, 2025</NativeSelectOption>
+                        <NativeSelectOption value="Apr 12, 2025">Apr 12, 2025</NativeSelectOption>
+                        <NativeSelectOption value="May 15, 2025">May 15, 2025</NativeSelectOption>
+                    </NativeSelect>
                 </div>
 
                 {/* Data Table */}
@@ -98,7 +126,7 @@ export default function BookingsPage() {
                                 </TableRow>
                             </TableHeader>
                             <TableBody className="bg-white">
-                                {bookings.map((booking, idx) => (
+                                {filteredBookings.map((booking, idx) => (
                                     <TableRow key={idx} className="border-b border-gray-50 hover:bg-gray-50/50 transition-colors">
                                         <TableCell className="py-4 text-gray-900 font-medium text-[14px]">
                                             {booking.id}
@@ -113,14 +141,34 @@ export default function BookingsPage() {
                                         <TableCell className="py-4 text-gray-500 text-[14px]">{booking.quantity}</TableCell>
                                         <TableCell className="py-4 font-semibold text-gray-900 text-[14px]">{booking.amount}</TableCell>
                                         <TableCell className="py-4">
-                                            <span className="inline-flex items-center px-3 py-1 rounded-full text-xs font-medium bg-blue-50 text-blue-600 border border-blue-100/50">
+                                            <span className={`inline-flex items-center px-3 py-1 rounded-full text-xs font-medium border ${booking.status === 'confirmed'
+                                                    ? 'bg-blue-50 text-blue-600 border-blue-100/50'
+                                                    : booking.status === 'pending'
+                                                        ? 'bg-amber-50 text-amber-600 border-amber-100/50'
+                                                        : 'bg-red-50 text-red-600 border-red-100/50'
+                                                }`}>
                                                 {booking.status}
                                             </span>
                                         </TableCell>
                                         <TableCell className="py-4 text-right pr-6">
-                                            <button className="text-gray-400 hover:text-gray-600 transition-colors cursor-pointer w-8 h-8 rounded-full flex items-center justify-center hover:bg-gray-100 ml-auto">
-                                                <MoreVertical size={18} />
-                                            </button>
+                                            <DropdownMenu>
+                                                <DropdownMenuTrigger asChild>
+                                                    <button className="text-gray-400 hover:text-gray-600 transition-colors cursor-pointer w-8 h-8 rounded-full flex items-center justify-center hover:bg-gray-100 ml-auto">
+                                                        <MoreVertical size={18} />
+                                                    </button>
+                                                </DropdownMenuTrigger>
+                                                <DropdownMenuContent align="end" className="w-40">
+                                                    <DropdownMenuItem className="cursor-pointer">
+                                                        <Eye className="w-4 h-4 mr-2" /> View Details
+                                                    </DropdownMenuItem>
+                                                    <DropdownMenuItem className="cursor-pointer">
+                                                        <FileText className="w-4 h-4 mr-2" /> Download Ticket
+                                                    </DropdownMenuItem>
+                                                    <DropdownMenuItem className="cursor-pointer text-red-600 focus:text-red-600">
+                                                        <RefreshCcw className="w-4 h-4 mr-2" /> Refund
+                                                    </DropdownMenuItem>
+                                                </DropdownMenuContent>
+                                            </DropdownMenu>
                                         </TableCell>
                                     </TableRow>
                                 ))}
