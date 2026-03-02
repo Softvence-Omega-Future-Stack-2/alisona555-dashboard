@@ -147,10 +147,32 @@
     @apply bg-background text-foreground;
   }
 }
-
+ 
 @layer utilities {
-  .bg-brand-gradient {
+
+    .bg-brand-gradient {
     background: var(--gradient-brand);
   }
-  
+  .scrollbar-thin {
+    scrollbar-width: thin;           /* Firefox + modern Chromium */
+    scrollbar-color: #d1d5db transparent;  /* gray thumb + transparent track – optional */
+  }
+
+  .scrollbar-thin::-webkit-scrollbar {
+    width: 8px;                      /* Chrome/Safari/Edge – make it thin */
+  }
+
+  .scrollbar-thin::-webkit-scrollbar-track {
+    background: transparent;
+  }
+
+  .scrollbar-thin::-webkit-scrollbar-thumb {
+    background-color: #d1d5db;       /* gray-300 */
+    border-radius: 9999px;
+    border: 2px solid transparent;   /* optional: adds padding feel */
+  }
+
+  .scrollbar-thin::-webkit-scrollbar-thumb:hover {
+    background-color: #9ca3af;       /* gray-500 on hover */
+  }
 }

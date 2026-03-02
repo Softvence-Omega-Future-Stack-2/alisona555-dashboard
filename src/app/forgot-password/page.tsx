@@ -1,10 +1,10 @@
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import {Shield, CircleUserRound, LockKeyholeOpen } from "lucide-react";
+import {  Mail } from "lucide-react";
 import Image from "next/image";
 import Link from "next/link";
 
-export default function LoginPage() {
+export default function ForgotPassword() {
     return (
         <div className="min-h-screen bg-[#0B1120] flex items-center justify-center relative overflow-hidden">
             {/* Starry Background Effect - using some absolute positioned dots */}
@@ -26,19 +26,19 @@ export default function LoginPage() {
                 </div>
 
                 {/* Headings */}
-                <h1 className="text-white text-2xl font-bold mb-2">Admin Portal</h1>
-                <p className="text-gray-400 text-sm mb-8">NATURE & SKY UAE Management System</p>
+                <h1 className="text-white text-2xl font-bold mb-2">Forgot Password</h1>
+                <p className="text-white/70 text-sm mb-8 text-center">Do you forgot your password. It’s ease to reset, just provide your email address. We’ll send you a OTP code.</p>
 
                 {/* Login Form Box */}
                 <div className="bg-brand-navy-light w-full rounded-2xl p-6 md:p-8 shadow-2xl border border-gray-800/50">
                     <form className="space-y-5" autoComplete="off">
 
                         <div className="space-y-4">
-                            <label className="text-gray-300 text-sm font-inter font-semibold ml-1">Admin Email</label>
+                            <label className="text-gray-300 text-sm font-inter font-semibold ml-1">Email</label>
                             <div className="relative mt-4">
                                 {/* <Mail className="absolute left-3.5 top-1/2 -translate-y-1/2 text-gray-400 h-5 w-5" /> */}
 
-                                 <CircleUserRound className="absolute left-3.5 top-1/2 -translate-y-1/2 text-white/80 h-5 w-5" />
+                                 <Mail className="absolute left-3.5 top-1/2 -translate-y-1/2 text-white/80 h-5 w-5" />
                                 <Input
                                     type="email"
                                     autoComplete="off"
@@ -47,30 +47,18 @@ export default function LoginPage() {
                                 />
                             </div>
                         </div>
+ 
 
-                        <div className="space-y-2">
-                            <label className="text-gray-300 text-sm! font-inter font-semibold ml-1 mb-4!">Password</label>
-                            <div className="relative mt-4">
-                                <LockKeyholeOpen className="absolute left-3.5 top-1/2 -translate-y-1/2 text-gray-400 h-5 w-5" />
-                                <Input
-                                    type="password"
-                                    autoComplete="off"
-                                    placeholder="password"
-                                    className="pl-11 h-12 bg-white/10  border border-white/20   text-gray-200 placeholder:text-gray-500 rounded-xl"
-                                />
-                            </div>
-                            <div className="flex justify-end pt-1">
-                                <Link  href="/forgot-password" className="text-red-500 text-xs hover:underline cursor-pointer">
-                                    Forgot Password?
-                                </Link>
-                            </div>
-                        </div>
-
-                        <div className="pt-4">
-                            <Link href="/dashboard"  >
+                        <div className="pt-4 flex gap-4">
+                            <Link href="/dashboard" className=""   >
+                                <Button className="cursor-pointer w-full h-12 rounded-xl bg-transparent hover:bg-brand-gold-hover text-white font-bold text-[15px] px-8  border border-white"> 
+                                    Cancel
+                                </Button>
+                            </Link>
+                            <Link href="/dashboard" className="flex-1"  >
                                 <Button className="cursor-pointer w-full h-12 rounded-xl bg-brand-gold hover:bg-brand-gold-hover text-white font-bold text-[15px] shadow-[0_4px_14px_rgba(219,152,6,0.3)] transition-all">
-                                    <Shield size={18} className="mr-2" />
-                                    Sign In to Admin Panel
+                                   
+                                    Send OTP
                                 </Button>
                             </Link>
                         </div>
