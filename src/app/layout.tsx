@@ -1,16 +1,17 @@
-import type { Metadata } from "next"; 
-import { Inter, Poppins  } from "next/font/google";
+import type { Metadata } from "next";
+import { Inter, Poppins } from "next/font/google";
 import "./globals.css";
+import { Providers } from "./provider";
 
- 
- 
+
+
 const inter = Inter({
   subsets: ["latin"],
   variable: "--font-inter",   // important for tailwind
 });
 export const poppins = Poppins({
   subsets: ["latin"],
-  weight: ["400","600","700"],
+  weight: ["400", "600", "700"],
   variable: "--font-poppins",
 });
 
@@ -18,6 +19,8 @@ export const metadata: Metadata = {
   title: "Nature & Sky UAE Management",
   description: "Dashboard for User and Booking Management",
 };
+
+import { Toaster } from "@/components/ui/sonner";
 
 export default function RootLayout({
   children,
@@ -29,7 +32,10 @@ export default function RootLayout({
       <body
         className={`${inter.variable}   antialiased min-h-screen`}
       >
-        {children}
+        <Providers>
+          {children}
+          <Toaster />
+        </Providers>
       </body>
     </html>
   );

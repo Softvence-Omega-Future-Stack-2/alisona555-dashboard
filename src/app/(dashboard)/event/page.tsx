@@ -29,6 +29,12 @@ import {
   DropdownMenuItem,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
+import dynamic from "next/dynamic";
+import { MapPin, Loader2 } from "lucide-react";
+
+const LocationPicker = dynamic(() => import("@/components/LocationPicker"), {
+  ssr: false,
+});
 
 // Dummy Data
 // Dummy Data
@@ -132,6 +138,13 @@ export default function EventManagementPage() {
   const [searchQuery, setSearchQuery] = useState("");
   const [categoryFilter, setCategoryFilter] = useState("");
   const [statusFilter, setStatusFilter] = useState("");
+
+  const [isLocationPickerOpen, setIsLocationPickerOpen] = useState(false);
+  const [selectedLocation, setSelectedLocation] = useState<{
+    lat: number;
+    lng: number;
+    address: string;
+  } | null>(null);
 
   const filteredEvents = initialEvents.filter((event) => {
     const matchesSearch =
@@ -241,29 +254,27 @@ export default function EventManagementPage() {
                 {/* Venue / Get Direction */}
                 <div className="space-y-1.5">
                   <label className="text-[13px] font-semibold text-[#4B5563]">
-                    Get Direction
+                    Venue Location & Direction
                   </label>
-                  <div className="relative">
+                  <div
+                    className="relative cursor-pointer group"
+                    onClick={() => setIsLocationPickerOpen(true)}
+                  >
                     <Input
-                      placeholder="Venue location"
-                      className="h-11 border-gray-200 rounded-lg text-[14px] pr-10"
+                      placeholder="Click to select venue location 📍"
+                      readOnly
+                      value={selectedLocation ? (selectedLocation.address || `${selectedLocation.lat.toFixed(4)}, ${selectedLocation.lng.toFixed(4)}`) : ""}
+                      className="h-11 border-gray-200 rounded-lg text-[14px] pr-10 cursor-pointer group-hover:border-brand-gold/50 transition-colors"
                     />
-                    <div className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-500">
-                      <svg
-                        width="18"
-                        height="18"
-                        viewBox="0 0 24 24"
-                        fill="none"
-                        stroke="currentColor"
-                        strokeWidth="2"
-                        strokeLinecap="round"
-                        strokeLinejoin="round"
-                      >
-                        <circle cx="12" cy="10" r="3" />
-                        <path d="M12 21.7C17.3 17 20 13 20 10a8 8 0 1 0-16 0c0 3 2.7 7 8 11.7z" />
-                      </svg>
+                    <div className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-500 group-hover:text-brand-gold transition-colors">
+                      <MapPin size={18} className={selectedLocation ? "text-brand-gold animate-bounce-subtle" : ""} />
                     </div>
                   </div>
+                  {selectedLocation && (
+                    <p className="text-[11px] text-gray-400 mt-1 font-mono pl-1">
+                      Coordinates: {selectedLocation.lat.toFixed(6)}, {selectedLocation.lng.toFixed(6)}
+                    </p>
+                  )}
                 </div>
 
                 {/* Date & Time */}
@@ -276,7 +287,7 @@ export default function EventManagementPage() {
                       <Input
                         placeholder="Enter Date"
                         className="h-11 border-gray-200 rounded-lg text-[14px] pr-10"
-                       
+
                       />
                       <div className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-500">
                         <svg
@@ -460,6 +471,17 @@ export default function EventManagementPage() {
             </div>
           </DialogContent>
         </Dialog>
+
+        {/* Location Picker Modal */}
+        <LocationPicker
+          isOpen={isLocationPickerOpen}
+          onClose={() => setIsLocationPickerOpen(false)}
+          onConfirm={(location) => {
+            setSelectedLocation(location);
+            setIsLocationPickerOpen(false);
+          }}
+          initialLocation={selectedLocation}
+        />
       </div>
       <div className="flex flex-col gap-6 w-full  mx-auto">
         {/* Stats Cards */}
@@ -630,13 +652,12 @@ export default function EventManagementPage() {
                       </TableCell>
                       <TableCell className="py-4">
                         <span
-                          className={`inline-flex items-center px-3 py-1 rounded-full text-xs font-medium ${
-                            event.status === "Active"
-                              ? "bg-brand-success text-brand-success-text"
-                              : event.status === "Completed"
-                                ? "bg-fuchsia-100 text-fuchsia-600"
-                                : "bg-amber-100 text-amber-700"
-                          }`}
+                          className={`inline-flex items-center px-3 py-1 rounded-full text-xs font-medium ${event.status === "Active"
+                            ? "bg-brand-success text-brand-success-text"
+                            : event.status === "Completed"
+                              ? "bg-fuchsia-100 text-fuchsia-600"
+                              : "bg-amber-100 text-amber-700"
+                            }`}
                         >
                           {event.status}
                         </span>

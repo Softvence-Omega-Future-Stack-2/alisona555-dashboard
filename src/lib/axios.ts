@@ -1,0 +1,82 @@
+import axios from "axios";
+import { useAuthStore } from "@/store/auth.store";
+import { env } from "@/config/env";
+
+export const api = axios.create({
+  baseURL: env.API_BASE_URL || "https://alisona-backend-hkr4.onrender.com/api/v1",
+  withCredentials: true,
+});
+
+let isRefreshing = false;
+let failedQueue: any[] = [];
+
+const processQueue = (error: any, token: string | null = null) => {
+  failedQueue.forEach((prom) => {
+    if (error) {
+      prom.reject(error);
+    } else {
+      prom.resolve(token);
+    }
+  });
+
+  failedQueue = [];
+};
+
+api.interceptors.request.use((config) => {
+  const token = useAuthStore.getState().accessToken;
+
+  if (token) {
+    config.headers.Authorization = `Bearer ${token}`;
+  }
+
+  return config;
+});
+
+api.interceptors.response.use(
+  (response) => response,
+  async (error) => {
+    const originalRequest = error.config;
+
+    if (error.response?.status === 401 && !originalRequest._retry) {
+      if (isRefreshing) {
+        return new Promise((resolve, reject) => {
+          failedQueue.push({ resolve, reject });
+        })
+          .then((token) => {
+            originalRequest.headers.Authorization = `Bearer ${token}`;
+            return api(originalRequest);
+          })
+          .catch((err) => Promise.reject(err));
+      }
+
+      originalRequest._retry = true;
+      isRefreshing = true;
+
+      try {
+        const res = await axios.post(
+          `${process.env.NEXT_PUBLIC_API_BASE_URL}/auth/refresh-token`,
+          {},
+          { withCredentials: true }
+        );
+
+        const newAccessToken = res.data.accessToken;
+
+        useAuthStore.getState().setAccessToken(newAccessToken);
+
+        processQueue(null, newAccessToken);
+
+        originalRequest.headers.Authorization = `Bearer ${newAccessToken}`;
+
+        return api(originalRequest);
+      } catch (err) {
+        processQueue(err, null);
+        useAuthStore.getState().logout();
+        return Promise.reject(err);
+      } finally {
+        isRefreshing = false;
+      }
+    }
+
+    return Promise.reject(error);
+  }
+);
