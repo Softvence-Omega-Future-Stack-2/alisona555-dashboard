@@ -1,20 +1,23 @@
+"use client";
 import { SidebarProvider } from "@/components/ui/sidebar";
-import AppSidebar from "@/components/AppSidebar";  
+import AppSidebar from "@/components/AppSidebar";
 
 export default function DashboardLayout({
-    children,
+  children,
 }: {
-    children: React.ReactNode;
+  children: React.ReactNode;
 }) {
-    return (
-        <SidebarProvider>
-            <AppSidebar />
-            <main className="flex-1 w-full min-h-screen overflow-x-hidden bg-brand-gray flex flex-col">
-              
-                <div className="flex-1">
-                    {children}
-                </div>
-            </main>
-        </SidebarProvider>
-    );
+
+
+
+  return (
+    <SidebarProvider>
+      <AppSidebar />
+      <main className="flex-1 w-full min-h-screen overflow-x-hidden bg-brand-gray flex flex-col">
+        <div className="flex-1">
+          {children}
+        </div>
+      </main>
+    </SidebarProvider>
+  );
 }

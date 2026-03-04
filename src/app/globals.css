@@ -198,3 +198,11 @@
     /* gray-500 on hover */
   }
 }
+
+[data-radix-portal] [data-radix-overlay] {
+  animation: none !important;
+}
+
+[data-radix-portal] [data-radix-content] {
+  animation: none !important;
+}

@@ -2,7 +2,7 @@ import type { Metadata } from "next";
 import { Inter, Poppins } from "next/font/google";
 import "./globals.css";
 import { Providers } from "./provider";
-
+import "leaflet/dist/leaflet.css"
 
 
 const inter = Inter({

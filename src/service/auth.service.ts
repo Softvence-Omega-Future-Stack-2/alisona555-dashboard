@@ -4,7 +4,8 @@ import { useAuthStore } from "@/store/auth.store";
 export const authService = {
   login: async (data: { email: string; password: string }) => {
     const res = await api.post("/auth/sign-in", data);
-    return res.data;
+
+    return res.data.data.data;
   },
   logout: async () => {
     // Some backends don't have a logout endpoint if using pure JWT

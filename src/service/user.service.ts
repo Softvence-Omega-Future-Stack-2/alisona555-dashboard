@@ -1,8 +1,9 @@
 import { api } from "@/lib/axios";
+import { ApiResponse, UserManagementData, UserQueryParams } from "../types";
 
 export const userService = {
-  getUsers: async () => {
-    const res = await api.get("/users");
+  getUsers: async (params: UserQueryParams): Promise<ApiResponse<UserManagementData>> => {
+    const res = await api.get("/dashboard/users", { params });
     return res.data;
   },
 
@@ -11,5 +12,4 @@ export const userService = {
     return res.data;
   },
 };
- 
- 
+

@@ -53,13 +53,14 @@ api.interceptors.response.use(
       isRefreshing = true;
 
       try {
+        const refreshToken = useAuthStore.getState().refreshToken;
         const res = await axios.post(
-          `${process.env.NEXT_PUBLIC_API_BASE_URL}/auth/refresh-token`,
-          {},
+          `https://alisona-backend-hkr4.onrender.com/api/v1/auth/refresh-token`,
+          { refreshToken },
           { withCredentials: true }
         );
 
-        const newAccessToken = res.data.accessToken;
+        const newAccessToken = res.data?.data?.tokens?.accessToken;
 
         useAuthStore.getState().setAccessToken(newAccessToken);
 

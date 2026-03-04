@@ -2,15 +2,22 @@ import { NextResponse } from "next/server";
 import type { NextRequest } from "next/server";
 
 export function middleware(request: NextRequest) {
-    const token = request.cookies.get("accessToken")?.value;
-    const isAuthPage = request.nextUrl.pathname === "/";
-    const isDashboardPage = request.nextUrl.pathname.startsWith("/dashboard");
+    const role = request.cookies.get("userRole")?.value;
+    const { pathname } = request.nextUrl;
 
-    if (isDashboardPage && !token) {
-        return NextResponse.redirect(new URL("/", request.url));
+    // 1. Define routes that require authentication
+    const protectedRoutes = ["/dashboard", "/users", "/bookings", "/settings", "/event"];
+    const isProtectedRoute = protectedRoutes.some((route) => pathname.startsWith(route));
+
+    // 2. Redirect unauthenticated users or non-admins to home/login
+    if (isProtectedRoute) {
+        if (role !== "ADMIN") {
+            return NextResponse.redirect(new URL("/unauthorized", request.url));
+        }
     }
 
-    if (isAuthPage && token) {
+    // 3. Optional: Redirect authenticated admins away from login page to dashboard
+    if (pathname === "/" && role === "ADMIN") {
         return NextResponse.redirect(new URL("/dashboard", request.url));
     }
 
@@ -18,5 +25,13 @@ export function middleware(request: NextRequest) {
 }
 
 export const config = {
-    matcher: ["/", "/dashboard/:path*"],
+    // Match all the routes that need protection + the login page ("/")
+    matcher: [
+        "/",
+        "/dashboard/:path*",
+        "/users/:path*",
+        "/bookings/:path*",
+        "/settings/:path*",
+        "/event/:path*",
+    ],
 };

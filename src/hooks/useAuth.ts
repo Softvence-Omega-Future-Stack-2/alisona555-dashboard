@@ -9,10 +9,11 @@ export const useLogin = () => {
   return useMutation({
     mutationFn: authService.login,
     onSuccess: (response) => {
-      const { tokens, user } = response.data.data;
+      const { tokens, user } = response
 
       // Set cookie for middleware access (global)
       setCookie("accessToken", tokens.accessToken, { path: "/" });
+      setCookie("userRole", user.role, { path: "/" });
 
       setAuth(tokens.accessToken, tokens.refreshToken, user);
     },
