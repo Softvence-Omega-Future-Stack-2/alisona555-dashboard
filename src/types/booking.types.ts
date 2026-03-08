@@ -45,6 +45,7 @@ export interface Booking {
     email: string;
     phoneNumber: string;
     status: "CONFIRMED" | "PENDING" | "FAILED" | "CANCELLED";
+    bookingConfarmStatus: string;
     price: number;
     quentity: number;
     createdAt: string;

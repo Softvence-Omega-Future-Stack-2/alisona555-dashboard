@@ -1,22 +1,26 @@
 "use client";
 
-import { useBookings } from "@/hooks/useBookings";
+import { useBookings, useUpdateBookingStatus } from "@/hooks/useBookings";
 import { Skeleton } from "@/components/ui/skeleton";
 import { Booking } from "@/types";
 import { useState } from "react";
-import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { SidebarTrigger } from "@/components/ui/sidebar";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
-import { Search, ChevronDown, MoreVertical, Ticket, Calendar as CalendarIcon, DollarSign, Eye, FileText, RefreshCcw } from "lucide-react";
+import { Search, ChevronDown, MoreVertical, Ticket, Calendar as CalendarIcon, DollarSign, Eye, FileText, RefreshCcw, Edit } from "lucide-react";
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from "@/components/ui/dropdown-menu";
 import { NativeSelect, NativeSelectOption } from "@/components/ui/native-select";
-import Image from "next/image";
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from "@/components/ui/dialog";
+import { Button } from "@/components/ui/button";
+import { toast } from "sonner";
+
 
 export default function BookingsPage() {
     const [page, setPage] = useState(1);
     const [search, setSearch] = useState("");
     const [status, setStatus] = useState("");
+    const [selectedBookingForEdit, setSelectedBookingForEdit] = useState<Booking | null>(null);
+    const [updateStatus, setUpdateStatus] = useState<string>("");
     const limit = 10;
 
     const { data: response, isLoading, isError } = useBookings({
@@ -25,6 +29,28 @@ export default function BookingsPage() {
         search,
         status,
     });
+
+    const { mutate: updateBooking, isPending: isUpdating } = useUpdateBookingStatus();
+
+    const handleUpdateStatus = () => {
+        if (!selectedBookingForEdit || !updateStatus) {
+            toast.error("Please select a valid status");
+            return;
+        }
+        updateBooking(
+            { bookingId: selectedBookingForEdit.bookingId, status: updateStatus },
+            {
+                onSuccess: () => {
+                    toast.success("Booking status updated successfully");
+                    setSelectedBookingForEdit(null);
+                    setUpdateStatus("");
+                },
+                onError: (error: any) => {
+                    toast.error(error?.response?.data?.message || "Failed to update booking status");
+                }
+            }
+        );
+    };
 
     const bookingManagement = response?.data;
     const summary = bookingManagement?.summary;
@@ -132,6 +158,7 @@ export default function BookingsPage() {
                                     <TableHead className="py-4 font-semibold text-gray-700 h-auto">Quantity</TableHead>
                                     <TableHead className="py-4 font-semibold text-gray-700 h-auto">Amount</TableHead>
                                     <TableHead className="py-4 font-semibold text-gray-700 h-auto">Status</TableHead>
+                                    <TableHead className="py-4 font-semibold text-gray-700 h-auto">Confirmation</TableHead>
                                     <TableHead className="py-4 font-semibold text-gray-700 h-auto text-right pr-6">Action</TableHead>
                                 </TableRow>
                             </TableHeader>
@@ -176,12 +203,22 @@ export default function BookingsPage() {
                                             <TableCell className="py-4 font-semibold text-gray-900 text-[14px]">AED {booking.price?.toLocaleString()}</TableCell>
                                             <TableCell className="py-4">
                                                 <span className={`inline-flex items-center px-3 py-1 rounded-full text-xs font-medium border ${booking.status === 'CONFIRMED'
-                                                        ? 'bg-blue-50 text-blue-600 border-blue-100/50'
-                                                        : booking.status === 'PENDING'
-                                                            ? 'bg-amber-50 text-amber-600 border-amber-100/50'
-                                                            : 'bg-red-50 text-red-600 border-red-100/50'
+                                                    ? 'bg-blue-50 text-blue-600 border-blue-100/50'
+                                                    : booking.status === 'PENDING'
+                                                        ? 'bg-amber-50 text-amber-600 border-amber-100/50'
+                                                        : 'bg-red-50 text-red-600 border-red-100/50'
                                                     }`}>
                                                     {booking.status.toLowerCase()}
+                                                </span>
+                                            </TableCell>
+                                            <TableCell className="py-4">
+                                                <span className={`inline-flex items-center px-3 py-1 rounded-full text-xs font-medium border ${booking.bookingConfarmStatus === 'CONFIRM'
+                                                    ? 'bg-blue-50 text-blue-600 border-blue-100/50'
+                                                    : booking.bookingConfarmStatus === 'NOT_CONFIRM'
+                                                        ? 'bg-amber-50 text-amber-600 border-amber-100/50'
+                                                        : 'bg-red-50 text-red-600 border-red-100/50'
+                                                    }`}>
+                                                    {booking.bookingConfarmStatus?.replace('_', ' ').toLowerCase() || 'N/A'}
                                                 </span>
                                             </TableCell>
                                             <TableCell className="py-4 text-right pr-6">
@@ -192,15 +229,15 @@ export default function BookingsPage() {
                                                         </button>
                                                     </DropdownMenuTrigger>
                                                     <DropdownMenuContent align="end" className="w-40">
-                                                        <DropdownMenuItem className="cursor-pointer">
-                                                            <Eye className="w-4 h-4 mr-2" /> View Details
+
+                                                        <DropdownMenuItem className="cursor-pointer" onClick={() => {
+                                                            setSelectedBookingForEdit(booking);
+                                                            setUpdateStatus(booking.bookingConfarmStatus || '');
+                                                        }}>
+                                                            <Edit className="w-4 h-4 mr-2" /> Edit Status
                                                         </DropdownMenuItem>
-                                                        <DropdownMenuItem className="cursor-pointer">
-                                                            <FileText className="w-4 h-4 mr-2" /> Download Ticket
-                                                        </DropdownMenuItem>
-                                                        <DropdownMenuItem className="cursor-pointer text-red-600 focus:text-red-600">
-                                                            <RefreshCcw className="w-4 h-4 mr-2" /> Refund
-                                                        </DropdownMenuItem>
+
+
                                                     </DropdownMenuContent>
                                                 </DropdownMenu>
                                             </TableCell>
@@ -230,8 +267,8 @@ export default function BookingsPage() {
                                             key={pageNum}
                                             onClick={() => setPage(pageNum)}
                                             className={`w-8 h-8 flex items-center justify-center rounded-lg text-sm font-medium transition-colors ${page === pageNum
-                                                    ? "bg-blue-50 text-brand-purple"
-                                                    : "text-gray-600 hover:bg-gray-100"
+                                                ? "bg-blue-50 text-brand-purple"
+                                                : "text-gray-600 hover:bg-gray-100"
                                                 }`}
                                         >
                                             {pageNum}
@@ -251,6 +288,51 @@ export default function BookingsPage() {
                     )}
                 </div>
             </div>
+
+            {/* Edit Status Modal */}
+            <Dialog open={!!selectedBookingForEdit} onOpenChange={(open) => {
+                if (!open) {
+                    setSelectedBookingForEdit(null);
+                    setUpdateStatus("");
+                }
+            }}>
+                <DialogContent className="sm:max-w-md">
+                    <DialogHeader>
+                        <DialogTitle>Edit Booking Status</DialogTitle>
+                    </DialogHeader>
+                    <div className="py-4">
+                        <label className="text-sm font-medium text-gray-700 mb-2 block">
+                            Select New Status
+                        </label>
+                        <NativeSelect
+                            value={updateStatus}
+                            onChange={(e) => setUpdateStatus(e.target.value)}
+                            className="w-full h-11 px-3 border border-gray-200 rounded-lg focus-visible:ring-1 focus-visible:ring-brand-purple"
+                        >
+                            <NativeSelectOption value="" disabled>Select status</NativeSelectOption>
+                            <NativeSelectOption value="NOT_CONFIRM">Not Confirmed</NativeSelectOption>
+                            <NativeSelectOption value="CONFIRM">Confirmed</NativeSelectOption>
+                            <NativeSelectOption value="REFUND">Refunded</NativeSelectOption>
+                        </NativeSelect>
+                    </div>
+                    <DialogFooter>
+                        <Button
+                            variant="outline"
+                            onClick={() => setSelectedBookingForEdit(null)}
+                            disabled={isUpdating}
+                        >
+                            Cancel
+                        </Button>
+                        <Button
+                            onClick={handleUpdateStatus}
+                            disabled={isUpdating || !updateStatus}
+                            className="bg-brand-purple hover:bg-brand-purple/90 text-white"
+                        >
+                            {isUpdating ? "Updating..." : "Save Changes"}
+                        </Button>
+                    </DialogFooter>
+                </DialogContent>
+            </Dialog>
         </div>
     );
 }
