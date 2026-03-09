@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import {
@@ -35,6 +35,8 @@ import {
   Upload,
   Loader2,
   Check,
+  Filter,
+  RotateCcw,
 } from "lucide-react";
 import {
   DropdownMenu,
@@ -45,7 +47,8 @@ import {
 import { useForm, Controller, SubmitHandler } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import * as z from "zod";
-import { useCreateEvent, useEvents } from "@/hooks/useEvents";
+import { useCreateEvent, useEvents, useDeleteEvent, useUpdateEvent } from "@/hooks/useEvents";
+import { Event as EventType } from "@/types/event.types";
 import { Switch } from "@/components/ui/switch";
 import {
   Popover,
@@ -77,8 +80,6 @@ const LocationPicker = dynamic(() => import("@/components/LocationPicker2"), {
   ssr: false,
 });
 
-// Dummy Data (Removed for live API integration)
-
 const eventSchema = z.object({
   title: z.string().min(3, "Title must be at least 3 characters"),
   description: z.string().min(10, "Description must be at least 10 characters"),
@@ -102,7 +103,7 @@ const eventSchema = z.object({
   highlights: z.string().min(1),
   status: z.enum(["ACTIVE", "INACTIVE"]),
   eventType: z.enum(["PAID", "FREE"]),
-  thumbnail: z.any().refine((file) => file instanceof File, "Thumbnail is required"),
+  thumbnail: z.any().optional(), // Make optional globally, we'll validate manually if needed or just let it be.
 });
 
 type EventFormValues = z.infer<typeof eventSchema>;
@@ -111,6 +112,13 @@ export default function EventManagementPage() {
   const [searchQuery, setSearchQuery] = useState("");
   const [categoryFilter, setCategoryFilter] = useState("");
   const [statusFilter, setStatusFilter] = useState("");
+  const [cityFilter, setCityFilter] = useState("");
+  const [minPriceFilter, setMinPriceFilter] = useState<number | undefined>(undefined);
+  const [maxPriceFilter, setMaxPriceFilter] = useState<number | undefined>(undefined);
+  const [freeOnlyFilter, setFreeOnlyFilter] = useState(false);
+  const [familyFriendlyFilter, setFamilyFriendlyFilter] = useState(false);
+  const [upcomingFilter, setUpcomingFilter] = useState(false);
+
   const [page, setPage] = useState(1);
   const limit = 10;
   const [isDialogOpen, setIsDialogOpen] = useState(false);
@@ -123,6 +131,10 @@ export default function EventManagementPage() {
   } | null>(null);
 
   const { mutate: createEvent, isPending: isCreating } = useCreateEvent();
+  const { mutate: deleteEvent, isPending: isDeleting } = useDeleteEvent();
+  const { mutate: updateEvent, isPending: isUpdating } = useUpdateEvent();
+
+  const [editingEvent, setEditingEvent] = useState<EventType | null>(null);
 
   const { data: eventsResponse, isLoading } = useEvents({
     page,
@@ -130,7 +142,28 @@ export default function EventManagementPage() {
     search: searchQuery || undefined,
     category: categoryFilter || undefined,
     status: statusFilter || undefined,
+    city: cityFilter || undefined,
+    minPrice: minPriceFilter,
+    maxPrice: maxPriceFilter,
+    freeOnly: freeOnlyFilter || undefined,
+    familyFriendly: familyFriendlyFilter || undefined,
+    upcoming: upcomingFilter || undefined,
   });
+
+  // Reset to page 1 when any filter changes
+  useEffect(() => {
+    setPage(1);
+  }, [
+    searchQuery,
+    categoryFilter,
+    statusFilter,
+    cityFilter,
+    minPriceFilter,
+    maxPriceFilter,
+    freeOnlyFilter,
+    familyFriendlyFilter,
+    upcomingFilter,
+  ]);
 
   const events = eventsResponse?.data?.data || [];
   const meta = eventsResponse?.data?.meta;
@@ -153,11 +186,10 @@ export default function EventManagementPage() {
       status: "ACTIVE",
       eventType: "PAID",
       ageLimit: 0,
-      // Initialize other fields as empty strings or appropriate defaults
       title: "",
       description: "",
       category: "",
-      eventDate: undefined, // Initialize as undefined for z.date()
+      eventDate: undefined,
       startTime: "",
       endTime: "",
       duration: "",
@@ -168,27 +200,87 @@ export default function EventManagementPage() {
       cancellationPolicy: "",
       whatToExpect: "",
       highlights: "",
-      latitude: 0, // Default to 0, will be updated by LocationPicker
-      longitude: 0, // Default to 0, will be updated by LocationPicker
-      thumbnail: undefined, // Initialize as undefined for z.any()
+      latitude: 0,
+      longitude: 0,
+      thumbnail: undefined,
     },
   });
 
   const onSubmit: SubmitHandler<EventFormValues> = (data) => {
     console.log("Form Data:", data);
-    createEvent(
-      {
+
+    if (editingEvent) {
+      // Update logic
+      const updateData = {
         ...data,
         eventDate: data.eventDate.toISOString(),
-      },
-      {
-        onSuccess: () => {
-          setIsDialogOpen(false);
-          reset();
-          setSelectedLocation(null);
-        },
+        highlights: data.highlights.split(",").map(h => h.trim()),
+        ageLimit: data.ageLimit.toString() // API expects string for ageLimit in update? Actually types says string in Event.
+      };
+      // Removing thumbnail if it's not a File (it's either undefined or the previous URL string)
+      if (!(data.thumbnail instanceof File)) {
+        delete (updateData as any).thumbnail;
       }
-    );
+
+      updateEvent(
+        { eventId: editingEvent.eventId, data: updateData },
+        {
+          onSuccess: () => {
+            setIsDialogOpen(false);
+            setEditingEvent(null);
+            reset();
+            setSelectedLocation(null);
+          },
+        }
+      );
+    } else {
+      // Create logic
+      createEvent(
+        {
+          ...data,
+          eventDate: data.eventDate.toISOString(),
+          thumbnail: data.thumbnail as File, // We expect thumbnail to be a File here because it's not an edit
+        },
+        {
+          onSuccess: () => {
+            setIsDialogOpen(false);
+            reset();
+            setSelectedLocation(null);
+          },
+        }
+      );
+    }
+  };
+
+  const handleEdit = (event: EventType) => {
+    setEditingEvent(event);
+    reset({
+      title: event.title,
+      description: event.description,
+      category: event.category,
+      eventDate: new Date(event.eventDate),
+      startTime: event.startTime,
+      endTime: event.endTime,
+      duration: event.duration,
+      price: event.price,
+      capacity: event.capacity,
+      venueName: event.venueName,
+      city: event.city,
+      address: event.address,
+      latitude: event.latitude,
+      longitude: event.longitude,
+      about: event.about,
+      cancellationPolicy: event.cancellationPolicy,
+      whatToExpect: event.whatToExpect,
+      isFamilyFriendly: event.isFamilyFriendly,
+      ageLimit: parseInt(event.ageLimit) || 0,
+      highlights: event.highlights.join(", "),
+      status: event.status,
+      eventType: event.price > 0 ? "PAID" : "FREE",
+      // thumbnail: event.thumbnail (we keep it as string, zod will allow it as optional any)
+    });
+    setSelectedLocation({ lat: event.latitude, lng: event.longitude, address: event.address });
+    setIsDialogOpen(true);
   };
 
 
@@ -211,7 +303,41 @@ export default function EventManagementPage() {
           </div>
         </div>
 
-        <Dialog open={isDialogOpen} onOpenChange={setIsDialogOpen}>
+        <Dialog
+          open={isDialogOpen}
+          onOpenChange={(open) => {
+            setIsDialogOpen(open);
+            if (!open) {
+              setEditingEvent(null);
+              reset({
+                price: 0,
+                capacity: 50,
+                isFamilyFriendly: true,
+                status: "ACTIVE",
+                eventType: "PAID",
+                ageLimit: 0,
+                title: "",
+                description: "",
+                category: "",
+                eventDate: undefined,
+                startTime: "",
+                endTime: "",
+                duration: "",
+                venueName: "",
+                city: "",
+                address: "",
+                about: "",
+                cancellationPolicy: "",
+                whatToExpect: "",
+                highlights: "",
+                latitude: 0,
+                longitude: 0,
+                thumbnail: undefined,
+              });
+              setSelectedLocation(null);
+            }
+          }}
+        >
           <DialogTrigger asChild>
             <Button className="bg-brand-gold hover:bg-brand-gold-hover text-white font-semibold text-[15px] h-11 px-6 rounded-xl flex items-center cursor-pointer gap-2 shadow-[0_4px_14px_rgba(219,152,6,0.25)] transition-all">
               <Plus size={18} />
@@ -221,7 +347,7 @@ export default function EventManagementPage() {
           <DialogContent className="scrollbar-thin sm:max-w-200 w-[95vw] max-h-[92vh] overflow-y-auto p-0 border-none rounded-2xl bg-white focus:outline-none focus-visible:ring-0">
             <DialogHeader className="px-6 pt-6 border-b border-gray-100 pr-12 mb-0">
               <DialogTitle className="text-[22px] font-bold text-[#1F2937]">
-                Create New Event
+                {editingEvent ? "Edit Event" : "Create New Event"}
               </DialogTitle>
             </DialogHeader>
 
@@ -389,7 +515,7 @@ export default function EventManagementPage() {
                     </div>
 
                     {/* Location Selection */}
-                    <div className="space-y-1.5">
+                    {/* <div className="space-y-1.5">
                       <label className="text-[13px] font-semibold text-[#4B5563]">
                         Location (Latitude & Longitude)
                       </label>
@@ -406,7 +532,7 @@ export default function EventManagementPage() {
                         <MapPin className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400 group-hover:text-brand-gold" size={18} />
                       </div>
                       {(errors.latitude || errors.longitude) && <p className="text-red-500 text-xs">Please select a location on map</p>}
-                    </div>
+                    </div> */}
 
                     {/* Address */}
                     <div className="space-y-1.5">
@@ -544,16 +670,16 @@ export default function EventManagementPage() {
                   </DialogClose>
                   <Button
                     type="submit"
-                    disabled={isCreating}
+                    disabled={isCreating || isUpdating}
                     className="flex-1 order-1 md:order-2 h-12 rounded-xl bg-brand-gold hover:bg-brand-gold-hover text-white font-bold"
                   >
-                    {isCreating ? (
+                    {isCreating || isUpdating ? (
                       <div className="flex items-center gap-2">
                         <Loader2 className="w-4 h-4 animate-spin" />
-                        Publishing...
+                        {isUpdating ? "Updating..." : "Publishing..."}
                       </div>
                     ) : (
-                      "Publish Event"
+                      editingEvent ? "Update Event" : "Publish Event"
                     )}
                   </Button>
                 </div>
@@ -650,7 +776,7 @@ export default function EventManagementPage() {
       </div>
 
       {/* Filter / Search Bar */}
-      <div className="px-6 md:px-8 ">
+      <div className="px-6 md:px-8 mb-8">
         <div className="bg-white rounded-2xl p-2 shadow-sm border border-gray-100 flex flex-col sm:flex-row items-center w-full gap-2 sm:gap-0">
           <div className="flex-1 flex items-center px-4 w-full">
             <Search className="text-gray-400 w-5 h-5 mr-3" />
@@ -668,13 +794,114 @@ export default function EventManagementPage() {
               onChange={(e) => setCategoryFilter(e.target.value)}
               className="bg-brand-purple hover:bg-brand-purple/90 text-white rounded-xl h-11 px-5 font-medium flex items-center gap-2 flex-1 sm:flex-initial"
             >
-              <NativeSelectOption value="">Category</NativeSelectOption>
+              <NativeSelectOption value="">All</NativeSelectOption>
               <NativeSelectOption value="Astronomy">Astronomy</NativeSelectOption>
               <NativeSelectOption value="Culture">Culture</NativeSelectOption>
               <NativeSelectOption value="Adventure">Adventure</NativeSelectOption>
               <NativeSelectOption value="Sports">Sports</NativeSelectOption>
               <NativeSelectOption value="Art">Art</NativeSelectOption>
             </NativeSelect>
+            <Popover>
+              <PopoverTrigger asChild>
+                <Button variant="outline" className="bg-white border-gray-200 rounded-xl h-11 px-4 font-medium flex items-center gap-2 text-gray-700 hover:bg-gray-50">
+                  <Filter size={18} />
+                  Filters
+                  {(cityFilter || minPriceFilter || maxPriceFilter || freeOnlyFilter || familyFriendlyFilter || upcomingFilter) && (
+                    <span className="ml-1 w-2 h-2 bg-brand-purple rounded-full" />
+                  )}
+                </Button>
+              </PopoverTrigger>
+              <PopoverContent className="w-80 p-5 rounded-2xl border-gray-100 shadow-xl" align="end">
+                <div className="space-y-4">
+                  <div className="flex items-center justify-between">
+                    <h4 className="font-bold text-gray-900">Advanced Filters</h4>
+                    <Button
+                      variant="ghost"
+                      size="sm"
+                      className="h-8 px-2 text-xs text-brand-purple hover:text-brand-purple/80 font-semibold flex items-center gap-1"
+                      onClick={() => {
+                        setCityFilter("");
+                        setMinPriceFilter(undefined);
+                        setMaxPriceFilter(undefined);
+                        setFreeOnlyFilter(false);
+                        setFamilyFriendlyFilter(false);
+                        setUpcomingFilter(false);
+                        setCategoryFilter("");
+                        setStatusFilter("");
+                      }}
+                    >
+                      <RotateCcw size={12} />
+                      Reset
+                    </Button>
+                  </div>
+
+                  <div className="space-y-3">
+                    <div className="space-y-1.5">
+                      <label className="text-[13px] font-semibold text-gray-700">City</label>
+                      <Input
+                        placeholder="Filter by city..."
+                        value={cityFilter}
+                        onChange={(e) => setCityFilter(e.target.value)}
+                        className="h-9 rounded-lg text-sm border-gray-200"
+                      />
+                    </div>
+
+                    <div className="grid grid-cols-2 gap-3">
+                      <div className="space-y-1.5">
+                        <label className="text-[13px] font-semibold text-gray-700">Min Price</label>
+                        <Input
+                          type="number"
+                          placeholder="Min"
+                          value={minPriceFilter ?? ""}
+                          onChange={(e) => setMinPriceFilter(e.target.value ? Number(e.target.value) : undefined)}
+                          className="h-9 rounded-lg text-sm border-gray-200"
+                        />
+                      </div>
+                      <div className="space-y-1.5">
+                        <label className="text-[13px] font-semibold text-gray-700">Max Price</label>
+                        <Input
+                          type="number"
+                          placeholder="Max"
+                          value={maxPriceFilter ?? ""}
+                          onChange={(e) => setMaxPriceFilter(e.target.value ? Number(e.target.value) : undefined)}
+                          className="h-9 rounded-lg text-sm border-gray-200"
+                        />
+                      </div>
+                    </div>
+
+                    <div className="space-y-3 pt-2">
+                      <div className="flex items-center justify-between">
+                        <div className="space-y-0.5">
+                          <label className="text-sm font-medium text-gray-700">Free Only</label>
+                        </div>
+                        <Switch
+                          checked={freeOnlyFilter}
+                          onCheckedChange={setFreeOnlyFilter}
+                        />
+                      </div>
+                      <div className="flex items-center justify-between">
+                        <div className="space-y-0.5">
+                          <label className="text-sm font-medium text-gray-700">Family Friendly</label>
+                        </div>
+                        <Switch
+                          checked={familyFriendlyFilter}
+                          onCheckedChange={setFamilyFriendlyFilter}
+                        />
+                      </div>
+                      <div className="flex items-center justify-between">
+                        <div className="space-y-0.5">
+                          <label className="text-sm font-medium text-gray-700">Upcoming Only</label>
+                        </div>
+                        <Switch
+                          checked={upcomingFilter}
+                          onCheckedChange={setUpcomingFilter}
+                        />
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              </PopoverContent>
+            </Popover>
             <NativeSelect
               value={statusFilter}
               onChange={(e) => setStatusFilter(e.target.value)}
@@ -741,7 +968,7 @@ export default function EventManagementPage() {
               ) : (
                 events.map((event) => {
                   const capacity = event.capacity || 1;
-                  const booked = event.capacity - (event.availableSeats || 0);
+                  const booked = event._count?.bookings ?? (event.capacity - (event.availableSeats || 0));
                   const percentage = (booked / capacity) * 100;
 
                   return (
@@ -768,7 +995,7 @@ export default function EventManagementPage() {
                       <TableCell className="py-4">
                         <div className="flex flex-col gap-1.5 w-full max-w-30">
                           <span className="text-gray-900 font-semibold text-[14px]">
-                            {booked}{" "}
+                            {booked}
                             <span className="text-gray-400 font-normal">
                               / {event.capacity}
                             </span>
@@ -805,10 +1032,17 @@ export default function EventManagementPage() {
                             <DropdownMenuItem className="cursor-pointer">
                               <Eye className="w-4 h-4 mr-2" /> View
                             </DropdownMenuItem>
-                            <DropdownMenuItem className="cursor-pointer">
+                            <DropdownMenuItem
+                              className="cursor-pointer"
+                              onClick={() => handleEdit(event)}
+                            >
                               <Edit className="w-4 h-4 mr-2" /> Edit
                             </DropdownMenuItem>
-                            <DropdownMenuItem className="cursor-pointer text-red-600 focus:text-red-600">
+                            <DropdownMenuItem
+                              className="cursor-pointer text-red-600 focus:text-red-600 focus:bg-red-50"
+                              onClick={() => deleteEvent(String(event.eventId))}
+                              disabled={isDeleting}
+                            >
                               <Trash2 className="w-4 h-4 mr-2" /> Delete
                             </DropdownMenuItem>
                           </DropdownMenuContent>

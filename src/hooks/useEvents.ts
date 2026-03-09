@@ -28,3 +28,39 @@ export const useEvents = (params: EventQueryParams) => {
         placeholderData: (previousData) => previousData,
     });
 };
+
+export const useDeleteEvent = () => {
+    const queryClient = useQueryClient();
+
+    return useMutation({
+        mutationFn: (eventId: string) => eventService.deleteEvent(eventId),
+        onSuccess: (response) => {
+            // Some DELETE endpoints don't return data, just a 200/204 status.
+            toast.success("Event deleted successfully!");
+            queryClient.invalidateQueries({ queryKey: ["events"] });
+        },
+        onError: (error: any) => {
+            const message = error.response?.data?.message || "Failed to delete event";
+            toast.error(message);
+        },
+    });
+};
+
+export const useUpdateEvent = () => {
+    const queryClient = useQueryClient();
+
+    return useMutation({
+        mutationFn: ({ eventId, data }: { eventId: string; data: any }) =>
+            eventService.updateEvent(eventId, data),
+        onSuccess: (response) => {
+            if (response.data) {
+                toast.success("Event updated successfully!");
+                queryClient.invalidateQueries({ queryKey: ["events"] });
+            }
+        },
+        onError: (error: any) => {
+            const message = error.response?.data?.message || "Failed to update event";
+            toast.error(message);
+        },
+    });
+};

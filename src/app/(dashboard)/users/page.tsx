@@ -1,7 +1,10 @@
 "use client";
 
-import { useUsers } from "@/hooks/useUsers";
+import { useUsers, useUpdateUserStatus, useDeleteUser } from "@/hooks/useUsers";
 import { Skeleton } from "@/components/ui/skeleton";
+import { Button } from "@/components/ui/button";
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from "@/components/ui/dialog";
+import { Avatar, AvatarImage, AvatarFallback } from "@/components/ui/avatar";
 import { User } from "@/types";
 import { useState } from "react";
 import { Input } from "@/components/ui/input";
@@ -12,23 +15,24 @@ import { Search, ChevronDown, MoreVertical, Ticket, Users, DollarSign, Eye, Edit
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from "@/components/ui/dropdown-menu";
 import Image from "next/image";
 
-// Dummy Data
-const initialUsers = [
-    { id: "1", name: "Ahmed Al-Mansoori", email: "ahmed.mansoori@email.com", contact: "+971 50 123 4567", location: "Dubai", activity: "12 bookings", joined: "Jan 15, 2025", status: "Active" },
-    { id: "2", name: "Sarah Johnson", email: "sarah.j@email.com", contact: "+1 202 555 0123", location: "USA", activity: "5 bookings", joined: "Feb 20, 2025", status: "Active" },
-    { id: "3", name: "Mohammed Ali", email: "m.ali@email.com", contact: "+971 50 987 6543", location: "Abu Dhabi", activity: "8 bookings", joined: "Mar 05, 2025", status: "Inactive" },
-    { id: "4", name: "Emily Chen", email: "emily.c@email.com", contact: "+44 7700 900077", location: "England", activity: "2 bookings", joined: "Mar 12, 2025", status: "Active" },
-    { id: "5", name: "Michael Smith", email: "m.smith@email.com", contact: "+1 312 555 0199", location: "USA", activity: "15 bookings", joined: "Apr 01, 2025", status: "Active" },
-    { id: "6", name: "David Williams", email: "d.will@email.com", contact: "+66 81 234 5678", location: "Thailand", activity: "4 bookings", joined: "May 15, 2025", status: "Active" },
-    { id: "7", name: "Sven Olsen", email: "sven.o@email.com", contact: "+45 20 12 34 56", location: "Denmark", activity: "9 bookings", joined: "Jun 20, 2025", status: "Active" },
-    { id: "8", name: "Fatima Hassan", email: "f.hassan@email.com", contact: "+971 50 111 2222", location: "Sharjah", activity: "1 bookings", joined: "Jul 10, 2025", status: "Inactive" },
-];
+const getInitials = (name: string) => {
+    if (!name) return "U";
+    const parts = name.split(" ");
+    if (parts.length >= 2) {
+        return (parts[0][0] + parts[1][0]).toUpperCase();
+    }
+    return name.slice(0, 2).toUpperCase();
+};
 
 export default function UserManagementPage() {
     const [page, setPage] = useState(1);
     const [search, setSearch] = useState("");
     const [status, setStatus] = useState("");
     const limit = 10;
+    const [isEditModalOpen, setIsEditModalOpen] = useState(false);
+    const [isDeleteModalOpen, setIsDeleteModalOpen] = useState(false);
+    const [selectedUser, setSelectedUser] = useState<User | null>(null);
+    const [newStatus, setNewStatus] = useState<"ACTIVE" | "INACTIVE">("ACTIVE");
 
     const { data: response, isLoading, isError, error } = useUsers({
         page,
@@ -37,10 +41,14 @@ export default function UserManagementPage() {
         status,
     });
 
+    const { mutate: updateStatus, isPending: isUpdating } = useUpdateUserStatus();
+    const { mutate: deleteUser, isPending: isDeleting } = useDeleteUser();
+
     const userManagement = response?.data;
     const stats = userManagement?.dashboard;
     const users = userManagement?.data || [];
     const pagination = userManagement?.pagination;
+
 
     const handleSearch = (e: React.ChangeEvent<HTMLInputElement>) => {
         setSearch(e.target.value);
@@ -50,6 +58,42 @@ export default function UserManagementPage() {
     const handleStatusChange = (e: React.ChangeEvent<HTMLSelectElement>) => {
         setStatus(e.target.value);
         setPage(1); // Reset to first page on filter
+    };
+
+    const handleEditClick = (user: User) => {
+        setSelectedUser(user);
+        setNewStatus(user.status);
+        setIsEditModalOpen(true);
+    };
+
+    const handleUpdateStatus = () => {
+        if (selectedUser) {
+            updateStatus(
+                { userId: selectedUser.userId, status: newStatus },
+                {
+                    onSuccess: () => {
+                        setIsEditModalOpen(false);
+                        setSelectedUser(null);
+                    },
+                }
+            );
+        }
+    };
+
+    const handleDeleteClick = (user: User) => {
+        setSelectedUser(user);
+        setIsDeleteModalOpen(true);
+    };
+
+    const handleConfirmDelete = () => {
+        if (selectedUser) {
+            deleteUser(selectedUser.userId, {
+                onSuccess: () => {
+                    setIsDeleteModalOpen(false);
+                    setSelectedUser(null);
+                },
+            });
+        }
     };
 
     return (
@@ -183,12 +227,12 @@ export default function UserManagementPage() {
                                     users.map((user: User) => (
                                         <TableRow key={user.userId} className="border-b border-gray-50 hover:bg-gray-50/50 transition-colors">
                                             <TableCell className="py-4 pl-5">
-                                                <Image
-                                                    src="/profile.png"
-                                                    alt="Avatar"
-                                                    width={40} height={40}
-                                                    className="rounded-full border border-gray-200"
-                                                />
+                                                <Avatar size="lg" className="border border-gray-200">
+                                                    <AvatarImage src={user.profile || ""} alt={user.username} className="object-cover" />
+                                                    <AvatarFallback className="bg-brand-purple/10 text-brand-purple font-bold">
+                                                        {getInitials(user.username)}
+                                                    </AvatarFallback>
+                                                </Avatar>
                                             </TableCell>
                                             <TableCell className="py-4">
                                                 <div className="font-medium text-gray-900 text-[15px]">{user.username || "Unknown User"}</div>
@@ -217,10 +261,18 @@ export default function UserManagementPage() {
                                                         <DropdownMenuItem className="cursor-pointer">
                                                             <Eye className="w-4 h-4 mr-2" /> View
                                                         </DropdownMenuItem>
-                                                        <DropdownMenuItem className="cursor-pointer">
-                                                            <Edit className="w-4 h-4 mr-2" /> Edit
+                                                        <DropdownMenuItem
+                                                            className="cursor-pointer"
+                                                            onClick={() => handleEditClick(user)}
+                                                            disabled={isUpdating}
+                                                        >
+                                                            <Edit className="w-4 h-4 mr-2" /> Edit Status
                                                         </DropdownMenuItem>
-                                                        <DropdownMenuItem className="cursor-pointer text-red-600 focus:text-red-600">
+                                                        <DropdownMenuItem
+                                                            className="cursor-pointer text-red-600 focus:text-red-600"
+                                                            onClick={() => handleDeleteClick(user)}
+                                                            disabled={isDeleting}
+                                                        >
                                                             <Trash2 className="w-4 h-4 mr-2" /> Delete
                                                         </DropdownMenuItem>
                                                     </DropdownMenuContent>
@@ -273,6 +325,77 @@ export default function UserManagementPage() {
                     )}
                 </div>
             </div>
+
+            {/* Edit Status Modal */}
+            <Dialog open={isEditModalOpen} onOpenChange={setIsEditModalOpen}>
+                <DialogContent className="sm:max-w-[425px] rounded-2xl bg-white focus:outline-none focus-visible:ring-0">
+                    <DialogHeader>
+                        <DialogTitle className="text-xl font-bold text-gray-900">Update User Status</DialogTitle>
+                    </DialogHeader>
+                    <div className="py-6 space-y-4">
+
+                        <div className="space-y-2">
+                            <label className="text-sm font-semibold text-gray-700">Status</label>
+                            <NativeSelect
+                                value={newStatus}
+                                onChange={(e) => setNewStatus(e.target.value as "ACTIVE" | "INACTIVE")}
+                                className="w-full bg-white border border-gray-200 rounded-xl h-11 px-4 text-gray-700 text-[15px] focus:border-brand-purple transition-colors"
+                            >
+                                <NativeSelectOption value="ACTIVE">Active</NativeSelectOption>
+                                <NativeSelectOption value="INACTIVE">Inactive</NativeSelectOption>
+                            </NativeSelect>
+                        </div>
+                    </div>
+                    <DialogFooter className="gap-3 sm:gap-0">
+                        <Button
+                            variant="outline"
+                            onClick={() => setIsEditModalOpen(false)}
+                            className="flex-1 h-11 rounded-xl border-gray-200 text-gray-700 font-semibold hover:bg-gray-50"
+                        >
+                            Cancel
+                        </Button>
+                        <Button
+                            onClick={handleUpdateStatus}
+                            disabled={isUpdating}
+                            className="flex-1 h-11 rounded-xl bg-brand-purple hover:bg-brand-purple/90 text-white font-semibold transition-all shadow-md shadow-brand-purple/20"
+                        >
+                            {isUpdating ? "Updating..." : "Save Changes"}
+                        </Button>
+                    </DialogFooter>
+                </DialogContent>
+            </Dialog>
+
+            {/* Delete Confirmation Modal */}
+            <Dialog open={isDeleteModalOpen} onOpenChange={setIsDeleteModalOpen}>
+                <DialogContent className="sm:max-w-[400px] rounded-2xl bg-white focus:outline-none focus-visible:ring-0">
+                    <DialogHeader>
+                        <DialogTitle className="text-xl font-bold text-gray-900 flex items-center gap-2">
+                            Confirm Delete
+                        </DialogTitle>
+                    </DialogHeader>
+                    <div className="py-6">
+                        <p className="text-gray-600">
+                            Are you sure you want to delete <span className="font-bold text-gray-900">{selectedUser?.username}</span>? This action cannot be undone.
+                        </p>
+                    </div>
+                    <DialogFooter className="gap-3 sm:gap-0">
+                        <Button
+                            variant="outline"
+                            onClick={() => setIsDeleteModalOpen(false)}
+                            className="flex-1 h-11 rounded-xl border-gray-200 text-gray-700 font-semibold hover:bg-gray-50"
+                        >
+                            Cancel
+                        </Button>
+                        <Button
+                            onClick={handleConfirmDelete}
+                            disabled={isDeleting}
+                            className="flex-1 h-11 rounded-xl bg-red-600 hover:bg-red-700 text-white font-semibold transition-all shadow-md shadow-red-600/20"
+                        >
+                            {isDeleting ? "Deleting..." : "Confirm Delete"}
+                        </Button>
+                    </DialogFooter>
+                </DialogContent>
+            </Dialog>
         </div>
     );
 }

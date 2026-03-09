@@ -27,6 +27,9 @@ export interface Event {
     ageLimit: string;
     highlights: string[];
     status: EventStatus;
+    _count?: {
+        bookings: number;
+    };
     createdAt: string;
     updatedAt: string;
 }
@@ -57,13 +60,22 @@ export interface PublishEventRequest {
     eventType: EventType;
 }
 
+export interface UpdateEventRequest extends Partial<Omit<PublishEventRequest, 'thumbnail' | 'highlights'>> {
+    highlights?: string[];
+}
+
 export interface EventQueryParams {
     page?: number;
     limit?: number;
     search?: string;
     category?: string;
     status?: string;
+    city?: string;
     minPrice?: number;
+    maxPrice?: number;
+    freeOnly?: boolean;
+    familyFriendly?: boolean;
+    upcoming?: boolean;
 }
 
 export interface EventListResponse {

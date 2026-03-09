@@ -28,4 +28,12 @@ export const eventService = {
         const res = await api.get("/event", { params });
         return res.data;
     },
+    deleteEvent: async (eventId: string): Promise<ApiResponse<any>> => {
+        const res = await api.delete(`/event/${eventId}`);
+        return res.data;
+    },
+    updateEvent: async (eventId: string, data: any): Promise<ApiResponse<Event>> => {
+        const res = await api.patch(`/event/${eventId}`, data);
+        return res.data;
+    },
 };
