@@ -7,7 +7,7 @@ import { useState, useEffect } from "react";
 import { Input } from "@/components/ui/input";
 import { SidebarTrigger } from "@/components/ui/sidebar";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
-import { Search, ChevronDown, MoreVertical, Ticket, Calendar as CalendarIcon, DollarSign, Eye, FileText, RefreshCcw, Edit } from "lucide-react";
+import { Search, ChevronDown, MoreVertical, Ticket, Calendar as CalendarIcon, DollarSign, Eye, FileText, RefreshCcw, Edit, ChartLine } from "lucide-react";
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from "@/components/ui/dropdown-menu";
 import { NativeSelect, NativeSelectOption } from "@/components/ui/native-select";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from "@/components/ui/dialog";
@@ -27,7 +27,7 @@ export default function BookingsPage() {
     useEffect(() => {
         const timer = setTimeout(() => {
             setSearch(searchInput);
-        }, 500);
+        }, 400);
 
         return () => clearTimeout(timer);
     }, [searchInput]);
@@ -137,20 +137,20 @@ export default function BookingsPage() {
                         <Input
                             type="text"
                             placeholder="search Bookings"
-                            value={search}
+                            value={searchInput}
                             onChange={handleSearch}
                             className="border-none shadow-none focus-visible:ring-0 text-[15px] h-12 px-0 text-gray-600 bg-transparent placeholder:text-gray-400"
                         />
                     </div>
 
                     <div className="relative flex-1 sm:flex-initial min-w-40">
-                        <CalendarIcon className="absolute left-3 top-1/2 -translate-y-1/2 text-white/80 w-4 h-4 pointer-events-none z-10" />
+                        <ChartLine className="absolute left-3 top-1/2 -translate-y-1/2 text-white/80 w-4 h-4 pointer-events-none z-10" />
                         <NativeSelect
                             value={status}
                             onChange={handleStatusChange}
                             className="bg-brand-purple hover:bg-brand-purple/90 text-white rounded-xl h-11 pl-10 pr-8 font-medium shadow-none border-none focus:ring-0 appearance-none"
                         >
-                            <NativeSelectOption value="">Status</NativeSelectOption>
+                            <NativeSelectOption value="">All</NativeSelectOption>
                             <NativeSelectOption value="NOT_CONFIRM">Not Confirmed</NativeSelectOption>
                             <NativeSelectOption value="CONFIRM">Confirmed</NativeSelectOption>
                             <NativeSelectOption value="REFUND">Refund</NativeSelectOption>
