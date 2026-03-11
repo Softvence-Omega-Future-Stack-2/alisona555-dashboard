@@ -216,13 +216,14 @@ export default function BookingsPage() {
                                             <TableCell className="py-4 text-gray-500 text-[14px]">{booking.quentity}</TableCell>
                                             <TableCell className="py-4 font-semibold text-gray-900 text-[14px]">AED {booking.price?.toLocaleString()}</TableCell>
                                             <TableCell className="py-4">
-                                                <span className={`inline-flex items-center px-3 py-1 rounded-full text-xs font-medium border ${booking.status === 'CONFIRMED'
-                                                    ? 'bg-blue-50 text-blue-600 border-blue-100/50'
-                                                    : booking.status === 'PENDING'
-                                                        ? 'bg-amber-50 text-amber-600 border-amber-100/50'
-                                                        : 'bg-red-50 text-red-600 border-red-100/50'
+                                                <span className={`inline-flex items-center px-3 py-1 rounded-full text-xs font-medium border ${booking.status === 'PAID'
+                                                    ? 'bg-green-50 text-green-600 border-green-100/50'
+                                                    : booking.status === 'FAILED'
+                                                        ? 'bg-red-50 text-red-600 border-red-100/50'
+                                                        : 'bg-amber-50 text-amber-600 border-amber-100/50'
                                                     }`}>
-                                                    {booking.status.toLowerCase()}
+                                                    {booking.status}
+
                                                 </span>
                                             </TableCell>
                                             <TableCell className="py-4">
@@ -232,7 +233,7 @@ export default function BookingsPage() {
                                                         ? 'bg-amber-50 text-amber-600 border-amber-100/50'
                                                         : 'bg-red-50 text-red-600 border-red-100/50'
                                                     }`}>
-                                                    {booking.bookingConfarmStatus?.replace('_', ' ').toLowerCase() || 'N/A'}
+                                                    {booking.bookingConfarmStatus?.replace('_', ' ') || 'N/A'}
                                                 </span>
                                             </TableCell>
                                             <TableCell className="py-4 text-right pr-6">

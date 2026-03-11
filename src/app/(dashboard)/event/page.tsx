@@ -847,7 +847,7 @@ export default function EventManagementPage() {
         {/* Paid Events */}
         <div className="bg-white p-6 rounded-[24px] border border-gray-100 shadow-sm hover:shadow-md transition-shadow">
           <div className="flex items-center gap-4">
-            <div className="bg-brand-success p-3 rounded-2xl w-fit">
+            <div className="bg-green-500 p-3 rounded-2xl w-fit">
               <DollarSign className="text-white w-6 h-6" />
             </div>
             <div>
@@ -858,7 +858,7 @@ export default function EventManagementPage() {
             </div>
           </div>
           <div className="mt-4 flex items-center gap-2 text-xs">
-            <span className="bg-brand-success/10 text-brand-success-text px-2 py-0.5 rounded-full font-medium">
+            <span className="bg-green-500/10 text-green-600 px-2 py-0.5 rounded-full font-medium">
               Paid
             </span>
             <span className="text-gray-400">Total paid events</span>
@@ -1022,7 +1022,7 @@ export default function EventManagementPage() {
                         </div>
                       </TableCell>
                       <TableCell className="py-4">
-                        <span className="inline-flex items-center px-3 py-1 rounded-full text-[13px] font-medium bg-[#FFF6EE] text-[#D47119] border border-[#FBE3CC]">
+                        <span className="inline-flex items-center px-3 py-1 rounded-full text-[13px] font-medium bg-green-50 text-green-600 border border-green-100/50">
                           {event.category}
                         </span>
                       </TableCell>
@@ -1053,9 +1053,19 @@ export default function EventManagementPage() {
                           className={`inline-flex items-center px-3 py-1 rounded-full text-xs font-medium ${event.status === "ACTIVE"
                             ? "bg-brand-success text-brand-success-text"
                             : "bg-amber-100 text-amber-700"
-                            }`}
+                            }  
+                            ${event.status === "INACTIVE"
+                              ? "bg-red-50 text-red-600 border-red-100/50"
+                              : ""
+                            }
+                            ${event.status === "COMPLITE" ? "bg-blue-50 text-blue-600 border-blue-100/50" : ""}
+                            `}
                         >
-                          {event.status}
+                          {/* {event.status} */}
+                          {event.status === "COMPLITE" ? "Completed" : ""}
+                          {event.status === "ACTIVE" ? "Active" : ""}
+                          {event.status === "INACTIVE" ? "Inactive" : ""}
+                          {event.status === "CANCELLED" ? "Cancelled" : ""}
                         </span>
                       </TableCell>
                       <TableCell className="py-4 text-right pr-6">

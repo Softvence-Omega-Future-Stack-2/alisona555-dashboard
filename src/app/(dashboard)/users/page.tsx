@@ -167,7 +167,7 @@ export default function UserManagementPage() {
                             className="border-none shadow-none focus-visible:ring-0 text-[15px] h-12 px-0 text-gray-600 bg-transparent placeholder:text-gray-400"
                         />
                     </div>
-                    <NativeSelect
+                    <div><NativeSelect
                         value={status}
                         onChange={handleStatusChange}
                         className="bg-brand-purple hover:bg-brand-purple/90 text-white rounded-xl h-11 px-5 font-medium flex items-center gap-2 flex-1 sm:flex-initial"
@@ -175,7 +175,7 @@ export default function UserManagementPage() {
                         <NativeSelectOption value="">Status</NativeSelectOption>
                         <NativeSelectOption value="ACTIVE">Active</NativeSelectOption>
                         <NativeSelectOption value="INACTIVE">Inactive</NativeSelectOption>
-                    </NativeSelect>
+                    </NativeSelect></div>
                 </div>
 
                 {/* Data Table */}
@@ -326,21 +326,21 @@ export default function UserManagementPage() {
 
             {/* Edit Status Modal */}
             <Dialog open={isEditModalOpen} onOpenChange={setIsEditModalOpen}>
-                <DialogContent className="sm:max-w-[425px] rounded-2xl bg-white focus:outline-none focus-visible:ring-0">
+                <DialogContent className="sm:max-w-[425px] w-full rounded-2xl bg-white focus:outline-none focus-visible:ring-0">
                     <DialogHeader>
                         <DialogTitle className="text-xl font-bold text-gray-900">Update User Status</DialogTitle>
                     </DialogHeader>
-                    <div className="py-6 space-y-4">
+                    <div className="py-6 space-y-4 w-full">
 
-                        <div className="space-y-2">
+                        <div className="space-y-2 w-full!">
                             <label className="text-sm font-semibold text-gray-700">Status</label>
                             <NativeSelect
                                 value={newStatus}
                                 onChange={(e) => setNewStatus(e.target.value as "ACTIVE" | "INACTIVE")}
-                                className="w-full bg-white border border-gray-200 rounded-xl h-11 px-4 text-gray-700 text-[15px] focus:border-brand-purple transition-colors"
+                                className="w-full! bg-white border border-gray-200 rounded-xl h-11 px-4 text-gray-700 text-[15px] focus:border-brand-purple transition-colors"
                             >
-                                <NativeSelectOption value="ACTIVE">Active</NativeSelectOption>
-                                <NativeSelectOption value="INACTIVE">Inactive</NativeSelectOption>
+                                <option value="ACTIVE" className="w-full">Active</option>
+                                <option value="INACTIVE" className="w-full">Inactive</option>
                             </NativeSelect>
                         </div>
                     </div>
