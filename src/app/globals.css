@@ -206,3 +206,7 @@
 [data-radix-portal] [data-radix-content] {
   animation: none !important;
 }
+
+.native-select {
+  width: 100% !important;
+}

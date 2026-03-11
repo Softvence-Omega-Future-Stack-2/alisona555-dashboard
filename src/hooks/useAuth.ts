@@ -19,3 +19,20 @@ export const useLogin = () => {
     },
   });
 };
+
+export const useChangePassword = () => {
+  return useMutation({
+    mutationFn: authService.changePassword,
+  });
+};
+
+export const useLogout = () => {
+  return useMutation({
+    mutationFn: authService.logout,
+    onSuccess: () => {
+      // Clear all cookies and state is handled inside authService.logout
+      // Redirect to home or login page
+      window.location.href = "/";
+    },
+  });
+};

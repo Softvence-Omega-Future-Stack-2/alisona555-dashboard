@@ -35,8 +35,9 @@ import {
   Upload,
   Loader2,
   Check,
-  Filter,
   RotateCcw,
+  LayoutDashboard,
+  Activity,
 } from "lucide-react";
 import {
   DropdownMenu,
@@ -47,7 +48,7 @@ import {
 import { useForm, Controller, SubmitHandler } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import * as z from "zod";
-import { useCreateEvent, useEvents, useDeleteEvent, useUpdateEvent } from "@/hooks/useEvents";
+import { useCreateEvent, useEvents, useDeleteEvent, useUpdateEvent, useUpdateEventThumbnail } from "@/hooks/useEvents";
 import { Event as EventType } from "@/types/event.types";
 import { Switch } from "@/components/ui/switch";
 import {
@@ -69,9 +70,12 @@ import {
 } from "@/components/ui/sheet";
 import { SidebarTrigger } from "@/components/ui/sidebar";
 import {
-  NativeSelect,
-  NativeSelectOption,
-} from "@/components/ui/native-select";
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
 
 import "leaflet/dist/leaflet.css";
 
@@ -79,6 +83,23 @@ import "leaflet/dist/leaflet.css";
 const LocationPicker = dynamic(() => import("@/components/LocationPicker2"), {
   ssr: false,
 });
+
+const CATEGORIES = [
+  { name: "Astronomy", icon: "🚀" },
+  { name: "Culture & Art", icon: "🎭" },
+  { name: "Sports", icon: "🏀" },
+  { name: "Nature & Outdoor", icon: "🌲" },
+];
+
+const CITIES = [
+  "Dubai",
+  "Abu Dhabi",
+  "Sharjah",
+  "Ajman",
+  "Ras Al Khaimah",
+  "Fujairah",
+  "Umm Al Quwain",
+];
 
 const eventSchema = z.object({
   title: z.string().min(3, "Title must be at least 3 characters"),
@@ -101,7 +122,7 @@ const eventSchema = z.object({
   isFamilyFriendly: z.boolean(),
   ageLimit: z.number().min(0),
   highlights: z.string().min(1),
-  status: z.enum(["ACTIVE", "INACTIVE"]),
+  status: z.enum(["ACTIVE", "INACTIVE", "COMPLITE", "CANCELLED"]),
   eventType: z.enum(["PAID", "FREE"]),
   thumbnail: z.any().optional(), // Make optional globally, we'll validate manually if needed or just let it be.
 });
@@ -122,6 +143,7 @@ export default function EventManagementPage() {
   const [page, setPage] = useState(1);
   const limit = 10;
   const [isDialogOpen, setIsDialogOpen] = useState(false);
+  const [previewUrl, setPreviewUrl] = useState<string | null>(null);
 
   const [isLocationSheetOpen, setIsLocationSheetOpen] = useState(false);
   const [selectedLocation, setSelectedLocation] = useState<{
@@ -133,10 +155,11 @@ export default function EventManagementPage() {
   const { mutate: createEvent, isPending: isCreating } = useCreateEvent();
   const { mutate: deleteEvent, isPending: isDeleting } = useDeleteEvent();
   const { mutate: updateEvent, isPending: isUpdating } = useUpdateEvent();
+  const { mutate: updateThumbnail, isPending: isUpdatingThumbnail } = useUpdateEventThumbnail();
 
   const [editingEvent, setEditingEvent] = useState<EventType | null>(null);
 
-  const { data: eventsResponse, isLoading } = useEvents({
+  const { data: eventsResponse, isLoading, refetch } = useEvents({
     page,
     limit,
     search: searchQuery || undefined,
@@ -215,9 +238,9 @@ export default function EventManagementPage() {
         ...data,
         eventDate: data.eventDate.toISOString(),
         highlights: data.highlights.split(",").map(h => h.trim()),
-        ageLimit: data.ageLimit.toString() // API expects string for ageLimit in update? Actually types says string in Event.
+        ageLimit: data.ageLimit.toString()
       };
-      // Removing thumbnail if it's not a File (it's either undefined or the previous URL string)
+
       if (!(data.thumbnail instanceof File)) {
         delete (updateData as any).thumbnail;
       }
@@ -230,6 +253,8 @@ export default function EventManagementPage() {
             setEditingEvent(null);
             reset();
             setSelectedLocation(null);
+            setPage(1);
+            refetch(); // Explicitly trigger refetch
           },
         }
       );
@@ -239,13 +264,15 @@ export default function EventManagementPage() {
         {
           ...data,
           eventDate: data.eventDate.toISOString(),
-          thumbnail: data.thumbnail as File, // We expect thumbnail to be a File here because it's not an edit
+          thumbnail: data.thumbnail as File,
         },
         {
           onSuccess: () => {
             setIsDialogOpen(false);
             reset();
             setSelectedLocation(null);
+            setPage(1);
+            refetch(); // Explicitly trigger refetch
           },
         }
       );
@@ -277,11 +304,36 @@ export default function EventManagementPage() {
       highlights: event.highlights.join(", "),
       status: event.status,
       eventType: event.price > 0 ? "PAID" : "FREE",
-      // thumbnail: event.thumbnail (we keep it as string, zod will allow it as optional any)
+      thumbnail: event.thumbnail
     });
     setSelectedLocation({ lat: event.latitude, lng: event.longitude, address: event.address });
+    setPreviewUrl(event.thumbnail || null);
     setIsDialogOpen(true);
   };
+
+  const handleThumbnailUpdate = () => {
+    const thumbnailFile = watch("thumbnail");
+    if (editingEvent && thumbnailFile instanceof File) {
+      updateThumbnail(
+        { eventId: editingEvent.eventId, thumbnail: thumbnailFile },
+        {
+          onSuccess: (response) => {
+            // Update the preview URL with the new server URL if available, 
+            // or just keep the current preview if it's already working.
+            // The hook already invalidates the query.
+          }
+        }
+      );
+    }
+  };
+
+  useEffect(() => {
+    return () => {
+      if (previewUrl && previewUrl.startsWith("blob:")) {
+        URL.revokeObjectURL(previewUrl);
+      }
+    };
+  }, [previewUrl]);
 
 
 
@@ -335,6 +387,7 @@ export default function EventManagementPage() {
                 thumbnail: undefined,
               });
               setSelectedLocation(null);
+              setPreviewUrl(null);
             }
           }}
         >
@@ -374,10 +427,23 @@ export default function EventManagementPage() {
                       <label className="text-[13px] font-semibold text-[#4B5563]">
                         Category
                       </label>
-                      <Input
-                        {...register("category")}
-                        placeholder="e.g. TECH, ART"
-                        className={`h-11 border-gray-200 rounded-lg text-[14px] ${errors.category ? "border-red-500" : ""}`}
+                      <Controller
+                        control={control}
+                        name="category"
+                        render={({ field }) => (
+                          <Select onValueChange={field.onChange} value={field.value}>
+                            <SelectTrigger className={`h-11 border-gray-200 rounded-lg text-[14px] w-full ${errors.category ? "border-red-500" : ""}`}>
+                              <SelectValue placeholder="Select category" />
+                            </SelectTrigger>
+                            <SelectContent>
+                              {CATEGORIES.map((cat) => (
+                                <SelectItem key={cat.name} value={cat.name}>
+                                  {cat.icon} {cat.name}
+                                </SelectItem>
+                              ))}
+                            </SelectContent>
+                          </Select>
+                        )}
                       />
                       {errors.category && <p className="text-red-500 text-xs">{errors.category.message}</p>}
                     </div>
@@ -467,11 +533,25 @@ export default function EventManagementPage() {
                       </div>
                       <div className="space-y-1.5">
                         <label className="text-[13px] font-semibold text-[#4B5563]">City</label>
-                        <Input
-                          {...register("city")}
-                          placeholder="e.g. Dubai"
-                          className="h-11 border-gray-200 rounded-lg text-[14px]"
+                        <Controller
+                          control={control}
+                          name="city"
+                          render={({ field }) => (
+                            <Select onValueChange={field.onChange} value={field.value}>
+                              <SelectTrigger className={`h-11 border-gray-200 rounded-lg text-[14px] w-full ${errors.city ? "border-red-500" : ""}`}>
+                                <SelectValue placeholder="Select city" />
+                              </SelectTrigger>
+                              <SelectContent>
+                                {CITIES.map((city) => (
+                                  <SelectItem key={city} value={city}>
+                                    {city}
+                                  </SelectItem>
+                                ))}
+                              </SelectContent>
+                            </Select>
+                          )}
                         />
+                        {errors.city && <p className="text-red-500 text-xs">{errors.city.message}</p>}
                       </div>
                     </div>
                   </div>
@@ -483,7 +563,7 @@ export default function EventManagementPage() {
                       <label className="text-[13px] font-semibold text-[#4B5563]">
                         Thumbnail Image
                       </label>
-                      <div className="relative">
+                      <div className="relative group">
                         <input
                           type="file"
                           accept="image/*"
@@ -491,25 +571,55 @@ export default function EventManagementPage() {
                           id="thumbnail-upload"
                           onChange={(e) => {
                             const file = e.target.files?.[0];
-                            if (file) setValue("thumbnail", file, { shouldValidate: true });
+                            if (file) {
+                              setValue("thumbnail", file, { shouldValidate: true });
+                              const objectUrl = URL.createObjectURL(file);
+                              setPreviewUrl(objectUrl);
+                            }
                           }}
                         />
-                        <label
-                          htmlFor="thumbnail-upload"
-                          className={`flex flex-col items-center justify-center w-full h-32 border-2 border-dashed border-gray-200 rounded-xl cursor-pointer hover:bg-gray-50 transition-colors ${errors.thumbnail ? "border-red-500" : ""}`}
-                        >
-                          {watch("thumbnail") ? (
-                            <div className="flex items-center gap-2 text-brand-gold">
-                              <Check size={20} />
-                              <span className="text-sm font-medium">Image Selected</span>
-                            </div>
-                          ) : (
-                            <div className="flex flex-col items-center gap-1 text-gray-400">
-                              <Upload size={24} />
-                              <span className="text-xs">Click to upload image</span>
-                            </div>
+                        <div className="flex gap-4">
+                          <label
+                            htmlFor="thumbnail-upload"
+                            className={`flex flex-col items-center justify-center flex-1 h-32 border-2 border-dashed border-gray-200 rounded-xl cursor-pointer hover:bg-gray-50 transition-colors overflow-hidden ${errors.thumbnail ? "border-red-500" : ""}`}
+                          >
+                            {previewUrl ? (
+                              <div className="relative w-full h-full">
+                                <img
+                                  src={previewUrl}
+                                  alt="Preview"
+                                  className="w-full h-full object-cover"
+                                />
+                                <div className="absolute inset-0 bg-black/40 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity">
+                                  <div className="flex flex-col items-center gap-1 text-white">
+                                    <Upload size={20} />
+                                    <span className="text-[10px]">Change Image</span>
+                                  </div>
+                                </div>
+                              </div>
+                            ) : (
+                              <div className="flex flex-col items-center gap-1 text-gray-400">
+                                <Upload size={24} />
+                                <span className="text-xs">Click to upload image</span>
+                              </div>
+                            )}
+                          </label>
+                          {editingEvent && watch("thumbnail") instanceof File && (
+                            <Button
+                              type="button"
+                              onClick={handleThumbnailUpdate}
+                              disabled={isUpdatingThumbnail}
+                              className="h-32 w-24 rounded-xl bg-brand-purple hover:bg-brand-purple/90 text-white flex-col gap-2 p-2 shrink-0 transition-all duration-200 animate-in fade-in zoom-in"
+                            >
+                              {isUpdatingThumbnail ? (
+                                <Loader2 className="w-5 h-5 animate-spin" />
+                              ) : (
+                                <RotateCcw className="w-5 h-5" />
+                              )}
+                              <span className="text-[10px] text-center leading-tight">Update Thumbnail</span>
+                            </Button>
                           )}
-                        </label>
+                        </div>
                       </div>
                       {errors.thumbnail && <p className="text-red-500 text-xs">{errors.thumbnail.message as string}</p>}
                     </div>
@@ -600,6 +710,8 @@ export default function EventManagementPage() {
                         >
                           <option value="ACTIVE">ACTIVE</option>
                           <option value="INACTIVE">INACTIVE</option>
+                          <option value="COMPLITE">COMPLETE</option>
+                          <option value="CANCELLED">CANCELLED</option>
                         </select>
                       </div>
                     </div>
@@ -775,6 +887,7 @@ export default function EventManagementPage() {
         </div>
       </div>
 
+
       {/* Filter / Search Bar */}
       <div className="px-6 md:px-8 mb-8">
         <div className="bg-white rounded-2xl p-2 shadow-sm border border-gray-100 flex flex-col sm:flex-row items-center w-full gap-2 sm:gap-0">
@@ -789,128 +902,52 @@ export default function EventManagementPage() {
             />
           </div>
           <div className="flex gap-3 px-2 w-full sm:w-auto">
-            <NativeSelect
-              value={categoryFilter}
-              onChange={(e) => setCategoryFilter(e.target.value)}
-              className="bg-brand-purple hover:bg-brand-purple/90 text-white rounded-xl h-11 px-5 font-medium flex items-center gap-2 flex-1 sm:flex-initial"
-            >
-              <NativeSelectOption value="">All</NativeSelectOption>
-              <NativeSelectOption value="Astronomy">Astronomy</NativeSelectOption>
-              <NativeSelectOption value="Culture">Culture</NativeSelectOption>
-              <NativeSelectOption value="Adventure">Adventure</NativeSelectOption>
-              <NativeSelectOption value="Sports">Sports</NativeSelectOption>
-              <NativeSelectOption value="Art">Art</NativeSelectOption>
-            </NativeSelect>
-            <Popover>
-              <PopoverTrigger asChild>
-                <Button variant="outline" className="bg-white border-gray-200 rounded-xl h-11 px-4 font-medium flex items-center gap-2 text-gray-700 hover:bg-gray-50">
-                  <Filter size={18} />
-                  Filters
-                  {(cityFilter || minPriceFilter || maxPriceFilter || freeOnlyFilter || familyFriendlyFilter || upcomingFilter) && (
-                    <span className="ml-1 w-2 h-2 bg-brand-purple rounded-full" />
-                  )}
-                </Button>
-              </PopoverTrigger>
-              <PopoverContent className="w-80 p-5 rounded-2xl border-gray-100 shadow-xl" align="end">
-                <div className="space-y-4">
-                  <div className="flex items-center justify-between">
-                    <h4 className="font-bold text-gray-900">Advanced Filters</h4>
-                    <Button
-                      variant="ghost"
-                      size="sm"
-                      className="h-8 px-2 text-xs text-brand-purple hover:text-brand-purple/80 font-semibold flex items-center gap-1"
-                      onClick={() => {
-                        setCityFilter("");
-                        setMinPriceFilter(undefined);
-                        setMaxPriceFilter(undefined);
-                        setFreeOnlyFilter(false);
-                        setFamilyFriendlyFilter(false);
-                        setUpcomingFilter(false);
-                        setCategoryFilter("");
-                        setStatusFilter("");
-                      }}
-                    >
-                      <RotateCcw size={12} />
-                      Reset
-                    </Button>
-                  </div>
+            {/* Category Filter */}
+            <Select value={categoryFilter || "all"} onValueChange={(val) => setCategoryFilter(val === "all" ? "" : val)}>
+              <SelectTrigger className="bg-white border-gray-200 rounded-xl h-11 px-4 font-medium flex items-center gap-2 text-gray-700 hover:bg-gray-50 flex-1 sm:flex-initial shadow-none">
+                <LayoutDashboard size={18} className="text-gray-400" />
+                <SelectValue placeholder="All Categories" />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="all">All Categories</SelectItem>
+                {CATEGORIES.map((cat) => (
+                  <SelectItem key={cat.name} value={cat.name}>
+                    {cat.icon} {cat.name}
+                  </SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
 
-                  <div className="space-y-3">
-                    <div className="space-y-1.5">
-                      <label className="text-[13px] font-semibold text-gray-700">City</label>
-                      <Input
-                        placeholder="Filter by city..."
-                        value={cityFilter}
-                        onChange={(e) => setCityFilter(e.target.value)}
-                        className="h-9 rounded-lg text-sm border-gray-200"
-                      />
-                    </div>
+            {/* City Filter */}
+            <Select value={cityFilter || "all"} onValueChange={(val) => setCityFilter(val === "all" ? "" : val)}>
+              <SelectTrigger className="bg-white border-gray-200 rounded-xl h-11 px-4 font-medium flex items-center gap-2 text-gray-700 hover:bg-gray-50 flex-1 sm:flex-initial shadow-none">
+                <MapPin size={18} className="text-gray-400" />
+                <SelectValue placeholder="All Cities" />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="all">All Cities</SelectItem>
+                {CITIES.map((city) => (
+                  <SelectItem key={city} value={city}>
+                    {city}
+                  </SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
 
-                    <div className="grid grid-cols-2 gap-3">
-                      <div className="space-y-1.5">
-                        <label className="text-[13px] font-semibold text-gray-700">Min Price</label>
-                        <Input
-                          type="number"
-                          placeholder="Min"
-                          value={minPriceFilter ?? ""}
-                          onChange={(e) => setMinPriceFilter(e.target.value ? Number(e.target.value) : undefined)}
-                          className="h-9 rounded-lg text-sm border-gray-200"
-                        />
-                      </div>
-                      <div className="space-y-1.5">
-                        <label className="text-[13px] font-semibold text-gray-700">Max Price</label>
-                        <Input
-                          type="number"
-                          placeholder="Max"
-                          value={maxPriceFilter ?? ""}
-                          onChange={(e) => setMaxPriceFilter(e.target.value ? Number(e.target.value) : undefined)}
-                          className="h-9 rounded-lg text-sm border-gray-200"
-                        />
-                      </div>
-                    </div>
-
-                    <div className="space-y-3 pt-2">
-                      <div className="flex items-center justify-between">
-                        <div className="space-y-0.5">
-                          <label className="text-sm font-medium text-gray-700">Free Only</label>
-                        </div>
-                        <Switch
-                          checked={freeOnlyFilter}
-                          onCheckedChange={setFreeOnlyFilter}
-                        />
-                      </div>
-                      <div className="flex items-center justify-between">
-                        <div className="space-y-0.5">
-                          <label className="text-sm font-medium text-gray-700">Family Friendly</label>
-                        </div>
-                        <Switch
-                          checked={familyFriendlyFilter}
-                          onCheckedChange={setFamilyFriendlyFilter}
-                        />
-                      </div>
-                      <div className="flex items-center justify-between">
-                        <div className="space-y-0.5">
-                          <label className="text-sm font-medium text-gray-700">Upcoming Only</label>
-                        </div>
-                        <Switch
-                          checked={upcomingFilter}
-                          onCheckedChange={setUpcomingFilter}
-                        />
-                      </div>
-                    </div>
-                  </div>
-                </div>
-              </PopoverContent>
-            </Popover>
-            <NativeSelect
-              value={statusFilter}
-              onChange={(e) => setStatusFilter(e.target.value)}
-              className="bg-gray-100 hover:bg-gray-200 text-gray-700 border-none rounded-xl h-11 px-5 font-medium flex items-center gap-2 flex-1 sm:flex-initial shadow-none focus:shadow-none focus:border-0"
-            >
-              <NativeSelectOption value="">Status</NativeSelectOption>
-              <NativeSelectOption value="ACTIVE">Active</NativeSelectOption>
-              <NativeSelectOption value="INACTIVE">Inactive</NativeSelectOption>
-            </NativeSelect>
+            {/* Status Filter */}
+            <Select value={statusFilter || "all"} onValueChange={(val) => setStatusFilter(val === "all" ? "" : val)}>
+              <SelectTrigger className="bg-white border-gray-200 rounded-xl h-11 px-4 font-medium flex items-center gap-2 text-gray-700 hover:bg-gray-50 flex-1 sm:flex-initial shadow-none">
+                <Activity size={18} className="text-gray-400" />
+                <SelectValue placeholder="Status" />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="all">Status</SelectItem>
+                <SelectItem value="ACTIVE">Active</SelectItem>
+                <SelectItem value="INACTIVE">Inactive</SelectItem>
+                <SelectItem value="COMPLITE">Complete</SelectItem>
+                <SelectItem value="CANCELLED">Cancelled</SelectItem>
+              </SelectContent>
+            </Select>
           </div>
         </div>
       </div>
@@ -1029,9 +1066,7 @@ export default function EventManagementPage() {
                             </button>
                           </DropdownMenuTrigger>
                           <DropdownMenuContent align="end" className="w-36">
-                            <DropdownMenuItem className="cursor-pointer">
-                              <Eye className="w-4 h-4 mr-2" /> View
-                            </DropdownMenuItem>
+
                             <DropdownMenuItem
                               className="cursor-pointer"
                               onClick={() => handleEdit(event)}

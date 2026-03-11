@@ -3,7 +3,7 @@
 import { useBookings, useUpdateBookingStatus } from "@/hooks/useBookings";
 import { Skeleton } from "@/components/ui/skeleton";
 import { Booking } from "@/types";
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { Input } from "@/components/ui/input";
 import { SidebarTrigger } from "@/components/ui/sidebar";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
@@ -17,11 +17,20 @@ import { toast } from "sonner";
 
 export default function BookingsPage() {
     const [page, setPage] = useState(1);
+    const [searchInput, setSearchInput] = useState("");
     const [search, setSearch] = useState("");
     const [status, setStatus] = useState("");
     const [selectedBookingForEdit, setSelectedBookingForEdit] = useState<Booking | null>(null);
     const [updateStatus, setUpdateStatus] = useState<string>("");
     const limit = 10;
+
+    useEffect(() => {
+        const timer = setTimeout(() => {
+            setSearch(searchInput);
+        }, 500);
+
+        return () => clearTimeout(timer);
+    }, [searchInput]);
 
     const { data: response, isLoading, isError } = useBookings({
         page,
@@ -29,6 +38,12 @@ export default function BookingsPage() {
         search,
         status,
     });
+
+    useEffect(() => {
+        if (isError) {
+            toast.error("Failed to fetch bookings. Please try again.");
+        }
+    }, [isError]);
 
     const { mutate: updateBooking, isPending: isUpdating } = useUpdateBookingStatus();
 
@@ -58,7 +73,7 @@ export default function BookingsPage() {
     const pagination = bookingManagement?.pagination;
 
     const handleSearch = (e: React.ChangeEvent<HTMLInputElement>) => {
-        setSearch(e.target.value);
+        setSearchInput(e.target.value);
         setPage(1);
     };
 
@@ -136,10 +151,9 @@ export default function BookingsPage() {
                             className="bg-brand-purple hover:bg-brand-purple/90 text-white rounded-xl h-11 pl-10 pr-8 font-medium shadow-none border-none focus:ring-0 appearance-none"
                         >
                             <NativeSelectOption value="">Status</NativeSelectOption>
-                            <NativeSelectOption value="CONFIRMED">Confirmed</NativeSelectOption>
-                            <NativeSelectOption value="PENDING">Pending</NativeSelectOption>
-                            <NativeSelectOption value="FAILED">Failed</NativeSelectOption>
-                            <NativeSelectOption value="CANCELLED">Cancelled</NativeSelectOption>
+                            <NativeSelectOption value="NOT_CONFIRM">Not Confirmed</NativeSelectOption>
+                            <NativeSelectOption value="CONFIRM">Confirmed</NativeSelectOption>
+                            <NativeSelectOption value="REFUND">Refund</NativeSelectOption>
                         </NativeSelect>
                         <ChevronDown className="absolute right-3 top-1/2 -translate-y-1/2 text-white/80 w-4 h-4 pointer-events-none" />
                     </div>
@@ -300,14 +314,14 @@ export default function BookingsPage() {
                     <DialogHeader>
                         <DialogTitle>Edit Booking Status</DialogTitle>
                     </DialogHeader>
-                    <div className="py-4">
+                    <div className="py-4 w-full">
                         <label className="text-sm font-medium text-gray-700 mb-2 block">
                             Select New Status
                         </label>
                         <NativeSelect
                             value={updateStatus}
                             onChange={(e) => setUpdateStatus(e.target.value)}
-                            className="w-full h-11 px-3 border border-gray-200 rounded-lg focus-visible:ring-1 focus-visible:ring-brand-purple"
+                            className="w-full h-11 px-3 border border-gray-200 rounded-lg focus-visible:ring-1 focus-visible:ring-brand-purple native-select"
                         >
                             <NativeSelectOption value="" disabled>Select status</NativeSelectOption>
                             <NativeSelectOption value="NOT_CONFIRM">Not Confirmed</NativeSelectOption>

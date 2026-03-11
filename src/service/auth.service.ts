@@ -16,4 +16,8 @@ export const authService = {
     }
     useAuthStore.getState().logout();
   },
+  changePassword: async (data: { oldPassword: string; newPassword: string }) => {
+    const res = await api.post("/auth/change-password", data);
+    return res.data;
+  },
 };

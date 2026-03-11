@@ -1,4 +1,4 @@
-export type EventStatus = "ACTIVE" | "INACTIVE";
+export type EventStatus = "ACTIVE" | "INACTIVE" | "COMPLITE" | "CANCELLED";
 export type EventType = "PAID" | "FREE";
 
 export interface Event {

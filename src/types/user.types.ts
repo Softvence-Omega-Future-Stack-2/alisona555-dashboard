@@ -29,3 +29,8 @@ export interface UserQueryParams {
     search?: string;
     status?: string;
 }
+export interface UserUpdateProfileRequest {
+    username?: string;
+    email?: string;
+    profile?: File | string | null;
+}

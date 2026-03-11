@@ -36,4 +36,14 @@ export const eventService = {
         const res = await api.patch(`/event/${eventId}`, data);
         return res.data;
     },
+    updateEventThumbnail: async (eventId: string, thumbnail: File): Promise<ApiResponse<Event>> => {
+        const formData = new FormData();
+        formData.append("thumbnail", thumbnail);
+        const res = await api.patch(`/event/${eventId}/thumbnail`, formData, {
+            headers: {
+                "Content-Type": "multipart/form-data",
+            },
+        });
+        return res.data;
+    },
 };

@@ -1,5 +1,5 @@
 import { api } from "@/lib/axios";
-import { ApiResponse, UserManagementData, UserQueryParams } from "../types";
+import { ApiResponse, User, UserManagementData, UserQueryParams } from "../types";
 
 export const userService = {
   getUsers: async (params: UserQueryParams): Promise<ApiResponse<UserManagementData>> => {
@@ -19,6 +19,18 @@ export const userService = {
 
   deleteUser: async (userId: string): Promise<ApiResponse<any>> => {
     const res = await api.delete(`/user/${userId}`);
+    return res.data;
+  },
+  getMe: async (): Promise<ApiResponse<User>> => {
+    const res = await api.get("/user/getMe");
+    return res.data;
+  },
+  updateProfile: async (data: FormData): Promise<ApiResponse<User>> => {
+    const res = await api.patch("/user/update-profile", data, {
+      headers: {
+        "Content-Type": "multipart/form-data",
+      },
+    });
     return res.data;
   },
 };

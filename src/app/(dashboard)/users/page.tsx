@@ -258,9 +258,7 @@ export default function UserManagementPage() {
                                                         </button>
                                                     </DropdownMenuTrigger>
                                                     <DropdownMenuContent align="end" className="w-36">
-                                                        <DropdownMenuItem className="cursor-pointer">
-                                                            <Eye className="w-4 h-4 mr-2" /> View
-                                                        </DropdownMenuItem>
+
                                                         <DropdownMenuItem
                                                             className="cursor-pointer"
                                                             onClick={() => handleEditClick(user)}
