@@ -30,7 +30,7 @@ export const useEvents = (params: EventQueryParams) => {
     return useQuery({
         queryKey: ["events", cleanParams],
         queryFn: () => eventService.getEvents(cleanParams as EventQueryParams),
-        staleTime: 0,
+        staleTime: 0, 
     });
 };
 
