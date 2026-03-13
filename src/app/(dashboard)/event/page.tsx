@@ -229,9 +229,7 @@ export default function EventManagementPage() {
     },
   });
 
-  const onSubmit: SubmitHandler<EventFormValues> = (data) => {
-    console.log("Form Data:", data);
-
+  const onSubmit: SubmitHandler<EventFormValues> = (data) => { 
     if (editingEvent) {
       // Update logic
       const updateData = {
@@ -725,7 +723,7 @@ export default function EventManagementPage() {
                     <textarea
                       {...register("description")}
                       placeholder="Enter detailed description..."
-                      className={`flex min-h-[80px] w-full rounded-lg border border-gray-200 px-3 py-3 text-[14px] ${errors.description ? "border-red-500" : ""}`}
+                      className={`flex min-h-20 w-full rounded-lg border border-gray-200 px-3 py-3 text-[14px] ${errors.description ? "border-red-500" : ""}`}
                     />
                     {errors.description && <p className="text-red-500 text-xs">{errors.description.message}</p>}
                   </div>
@@ -736,7 +734,7 @@ export default function EventManagementPage() {
                       <textarea
                         {...register("about")}
                         placeholder="What is this event about?"
-                        className="flex min-h-[80px] w-full rounded-lg border border-gray-200 px-3 py-3 text-[14px]"
+                        className="flex min-h-20 w-full rounded-lg border border-gray-200 px-3 py-3 text-[14px]"
                       />
                     </div>
                     <div className="space-y-1.5">
@@ -744,7 +742,7 @@ export default function EventManagementPage() {
                       <textarea
                         {...register("whatToExpect")}
                         placeholder="What should attendees expect?"
-                        className="flex min-h-[80px] w-full rounded-lg border border-gray-200 px-3 py-3 text-[14px]"
+                        className="flex min-h-20 w-full rounded-lg border border-gray-200 px-3 py-3 text-[14px]"
                       />
                     </div>
                   </div>
@@ -755,7 +753,7 @@ export default function EventManagementPage() {
                       <textarea
                         {...register("highlights")}
                         placeholder="Networking, Certificate, Food..."
-                        className="flex min-h-[60px] w-full rounded-lg border border-gray-200 px-3 py-3 text-[14px]"
+                        className="flex min-h-15 w-full rounded-lg border border-gray-200 px-3 py-3 text-[14px]"
                       />
                     </div>
                     <div className="space-y-1.5">
@@ -763,7 +761,7 @@ export default function EventManagementPage() {
                       <textarea
                         {...register("cancellationPolicy")}
                         placeholder="Refund policy details..."
-                        className="flex min-h-[60px] w-full rounded-lg border border-gray-200 px-3 py-3 text-[14px]"
+                        className="flex min-h-15 w-full rounded-lg border border-gray-200 px-3 py-3 text-[14px]"
                       />
                     </div>
                   </div>
